@@ -1,0 +1,34 @@
+<h2 class="dh">Design B · Start from budget and usage</h2>
+<p class="lede">Here you start from the controls: <b>set a task, usage, quality bar, budget, license and speed floor</b>, then read the surviving models and see where they sit on the price × score map.</p>
+
+<div class="controls card">
+  <div class="grp"><span class="lab">Task</span><div class="seg" id="b-task"></div></div>
+  <div class="grp"><span class="lab">Monthly usage (75% input / 25% output)</span><div class="seg" id="b-usage"></div></div>
+  <label class="grow"><span class="lab">Good enough ≥ <b id="b-pct-val"></b> of best score</span><input id="b-pct" type="range" min="50" max="100" step="1" value="80"></label>
+  <label class="grow"><span class="lab">Budget: <b id="b-budget-val"></b></span><input id="b-budget" type="range" min="0" max="100" step="1" value="60"></label>
+  <label><span class="lab">License</span><select id="b-license"><option value="all">all</option><option value="open">open weights</option><option value="closed">proprietary</option></select></label>
+  <label class="grow"><span class="lab">Min speed: <b id="b-speed-val"></b></span><input id="b-speed" type="range" min="0" max="250" step="10" value="0"></label>
+</div>
+<p class="explain"><strong>Filter</strong> — every control <u>removes</u> models from ① and <u>greys them out</u> in ② (they stay visible as context). A funnel below shows how many each control removes.<br>
+<strong>Link</strong> — hovering a bar or dot rings it in the other view; clicking pins it in the detail card. Nothing is removed by linking.</p>
+<p class="hint" id="b-funnel" style="margin-top:8px"></p>
+
+<div class="layoutB">
+  <section class="card"><h2 id="b-bill-title"></h2><p class="hint" id="b-bill-hint"></p><div id="b-bill"></div>
+    <div class="legend"><span><i style="background:var(--open)"></i>open weights</span><span><i style="background:var(--prop)"></i>proprietary</span><span><i class="sq" style="background:var(--seg-in)"></i>input cost</span><span><i class="sq" style="background:var(--seg-out)"></i>output cost</span></div>
+    <p class="coverage">List prices; reasoning models usually emit more tokens, so real bills run higher. Free models cost $0 to license, not to host.</p></section>
+  <div style="display:grid;gap:12px">
+    <section class="card"><h2 id="b-sc-title"></h2><div id="b-sc"></div>
+      <p class="coverage" id="b-cov"></p>
+      <div class="legend"><span><i class="ringi"></i>hovered / pinned</span><span>dashed line = good-enough bar</span><span style="color:var(--prop)">dotted line = budget cap (as price per 1M tokens)</span><span>left lane = free</span></div></section>
+    <section class="card"><h2>Pinned model</h2><div class="detail" id="b-detail"></div></section>
+  </div>
+</div>
+
+<details class="defs"><summary>Definitions, data coverage and caveats</summary><ul>
+<li><b>Data:</b> LLM Price-Performance Tracker (Kaggle), scrape of 2026-03-31, 453 model endpoints. Nothing is imputed; each view says how many models it leaves out.</li>
+<li><b>Good enough:</b> score ≥ X% of the best score any model has in that task (best: general 57.2, coding 57.3, math 99.0).</li>
+<li><b>Budget:</b> a model passes if its monthly bill at the chosen usage is within budget. The dotted line in ② shows the same cap as a price per 1M tokens.</li>
+<li><b>Speed:</b> output tokens/second, known for most but not all priced models; with a speed floor set, models with unknown speed are dropped and counted.</li>
+<li><b>Free</b> models are open-weight with a $0 list price (you pay for hosting yourself). They always pass the budget control.</li>
+</ul></details>

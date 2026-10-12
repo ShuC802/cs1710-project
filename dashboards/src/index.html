@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Evolution of LLM Value · coordinated-view prototypes</title>
+<style>/*CSS*/
+.dh { font-size: 18px; margin: 14px 0 4px; }
+.tabs { display: flex; gap: 8px; margin: 10px 0 4px; flex-wrap: wrap; }
+.tabs button { font: inherit; padding: 8px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1); color: var(--text-secondary); cursor: pointer; }
+.tabs button b { color: var(--text-primary); }
+.tabs button[aria-selected=true] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.tabs button[aria-selected=true] b { color: var(--accent); }
+.design[hidden] { display: none; }
+.q { font-size: 15px; margin: 4px 0 0; max-width: 900px; }
+</style></head>
+<body><main>
+<h1>The Evolution of LLM Value · two coordinated-view prototypes</h1>
+<p class="q"><b>Shared question:</b> for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month?</p>
+<p class="lede" style="margin-top:6px">Same three views, two ways to connect them. Data: LLM Price-Performance Tracker (Kaggle), 453 model endpoints, scrape of 2026-03-31.</p>
+<div class="tabs" role="tablist">
+  <button role="tab" id="tab-a" aria-selected="true"><b>Design A</b> · start from performance <span style="color:var(--text-muted)">(brush &amp; link)</span></button>
+  <button role="tab" id="tab-b" aria-selected="false"><b>Design B</b> · start from budget <span style="color:var(--text-muted)">(shared filters)</span></button>
+</div>
+<div class="design" id="design-a">/*A*/</div>
+<div class="design" id="design-b" hidden>/*B*/</div>
+</main>
+<script>/*D3*/</script>
+<script>/*DATA*/</script>
+<script>/*COMMON*/</script>
+<script>/*APAGE*/</script>
+<script>/*BPAGE*/</script>
+<script>
+(function(){
+  const show = (k) => { for (const x of ["a","b"]) { document.getElementById("design-"+x).hidden = x!==k; document.getElementById("tab-"+x).setAttribute("aria-selected", x===k); } try { history.replaceState(null,"","#"+k); } catch(e){} };
+  document.getElementById("tab-a").onclick = () => show("a"); document.getElementById("tab-b").onclick = () => show("b");
+  show(location.hash === "#b" ? "b" : "a");
+  addEventListener("hashchange", () => show(location.hash === "#b" ? "b" : "a"));
+})();
+</script>
+</body></html>

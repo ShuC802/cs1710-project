@@ -1,0 +1,33 @@
+<h2 class="dh">Design A · Start from performance</h2>
+<p class="lede">Here you start from the scatters: <b>brush a region</b> in any task to see the monthly bill of exactly those models; hover a bill row to find the same model in all three tasks.</p>
+
+<div class="controls card">
+  <div class="grp"><span class="lab">Monthly usage (75% input / 25% output tokens)</span><div class="seg" id="a-usage"></div></div>
+  <label class="grow"><span class="lab">Good enough = at least <b id="a-pct-val">80%</b> of the best score in that task</span>
+    <input id="a-pct" type="range" min="50" max="100" step="1" value="80"></label>
+  <div class="grp"><span class="lab">Active task for ② and ③</span><span id="a-active-name"></span></div>
+  <button class="plain" id="a-clear">Clear brush</button>
+</div>
+
+<div class="panels3" id="a-panels"></div>
+<p class="explain"><strong>Filter</strong> — a brush in ① <u>removes</u> every other model from ② (and makes that task active). &nbsp;
+<strong>Link</strong> — hovering a model in ① or ② only <u>rings</u> it in all three scatters. Nothing is removed.</p>
+<div class="legend"><span><i style="background:var(--open)"></i>open weights</span><span><i style="background:var(--prop)"></i>proprietary</span>
+<span><i class="ringi"></i>hovered / flagship + matches</span><span>shaded band &amp; dashed line = good-enough threshold</span><span>left lane = free ($0 list price)</span></div>
+
+<div class="row2" style="margin-top:12px">
+  <section class="card"><h2 id="a-bill-title"></h2><p class="hint" id="a-bill-hint"></p><div id="a-bill"></div>
+    <div class="legend"><span><i class="sq" style="background:var(--seg-in)"></i>input-token cost</span><span><i class="sq" style="background:var(--seg-out)"></i>output-token cost</span></div>
+    <p class="coverage">List prices; reasoning models usually emit more tokens, so real bills run higher. Free models cost $0 to license, not to host.</p></section>
+  <section class="card"><h2 id="a-flag-title"></h2><p class="hint" id="a-flag-hint"></p><div id="a-flags"></div>
+    <p class="coverage">● flagship = best-scoring paid model of its release-year cohort. ○ = cheapest paid model from a LATER cohort that scores at least the good-enough share of the flagship’s score; small dots = the other matches; free matches are counted, not priced. 2023 is left out (7 models). The newest cohort has nothing later to compare against.</p>
+    <p class="explain link"><strong>Link</strong> — clicking a column only highlights models in the active scatter ①; nothing is removed.</p></section>
+</div>
+
+<details class="defs"><summary>Definitions, data coverage and caveats</summary><ul>
+<li><b>Data:</b> LLM Price-Performance Tracker (Kaggle), scrape of 2026-03-31, 453 model endpoints. Nothing is imputed; every chart says how many models it had to leave out.</li>
+<li><b>Good enough:</b> score ≥ X% of the best score any model has in that task (best: general 57.2, coding 57.3, math 99.0). The three indexes use different scales, so a percentage gives one shared definition.</li>
+<li><b>Monthly bill:</b> usage tokens × the model's input and output list prices at a 3:1 input:output mix (the same mix the dataset's blended price uses).</li>
+<li><b>Release year only:</b> the dataset has no release dates and 161 models have no year, so time views are year cohorts and skip those models. The 138 models without a price (mostly open-weight, lower scoring) cannot appear in any price view.</li>
+<li><b>Free</b> models are open-weight models with a $0 list price. They are shown in a separate lane and never used for "× cheaper".</li>
+</ul></details>
