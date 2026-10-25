@@ -1,0 +1,129 @@
+{
+ "coverage": {
+  "n_models": 453,
+  "n_free": 16,
+  "n_no_price": 138,
+  "n_no_year": 161,
+  "n_general_paid": 297,
+  "n_coding_paid": 262,
+  "n_math_paid": 198
+ },
+ "hook": {
+  "old": {
+   "name": "o1",
+   "score": 30.8,
+   "price": 26.25,
+   "speed": 117.1
+  },
+  "new": {
+   "name": "Qwen3.5 9B (Reasoning)",
+   "score": 32.4,
+   "price": 0.096,
+   "speed": 111.3
+  },
+  "ratio": 273
+ },
+ "bands": [
+  {
+   "band": "0-20",
+   "n": 135,
+   "median_price": 0.4
+  },
+  {
+   "band": "20-30",
+   "n": 64,
+   "median_price": 0.85
+  },
+  {
+   "band": "30-40",
+   "n": 54,
+   "median_price": 1.05
+  },
+  {
+   "band": "40-50",
+   "n": 38,
+   "median_price": 2.34
+  },
+  {
+   "band": "50+",
+   "n": 6,
+   "median_price": 5.22
+  }
+ ],
+ "tasks": {
+  "general": {
+   "best_score": 57.2,
+   "threshold": 45.8,
+   "n_pass": 19,
+   "top_model": "GPT-5.4 (xhigh)",
+   "top_price": 5.625,
+   "cheapest_model": "MiniMax-M2.7",
+   "cheapest_score": 49.6,
+   "cheapest_price": 0.525,
+   "share_of_top_score": 0.867,
+   "price_ratio": 0.093
+  },
+  "coding": {
+   "best_score": 57.3,
+   "threshold": 45.8,
+   "n_pass": 11,
+   "top_model": "GPT-5.4 (xhigh)",
+   "top_price": 5.625,
+   "cheapest_model": "GPT-5.4 mini (xhigh)",
+   "cheapest_score": 51.5,
+   "cheapest_price": 1.688,
+   "share_of_top_score": 0.899,
+   "price_ratio": 0.3
+  },
+  "math": {
+   "best_score": 99.0,
+   "threshold": 79.2,
+   "n_pass": 56,
+   "top_model": "GPT-5.2 (xhigh)",
+   "top_price": 4.813,
+   "cheapest_model": "gpt-oss-20B (high)",
+   "cheapest_score": 89.3,
+   "cheapest_price": 0.094,
+   "share_of_top_score": 0.902,
+   "price_ratio": 0.02
+  }
+ },
+ "speed": {
+  "n_pass": 19,
+  "n_speed_known": 17,
+  "n_fast": 7,
+  "cheapest": {
+   "name": "MiniMax-M2.7",
+   "score": 49.6,
+   "price": 0.525,
+   "speed": 45.7
+  },
+  "fast_cheap": {
+   "name": "Gemini 3 Flash Preview (Reasoning)",
+   "score": 46.4,
+   "price": 1.125,
+   "speed": 193.3
+  }
+ },
+ "main": {
+  "tokens_per_month": 100000000.0,
+  "top_model": "GPT-5.4 (xhigh)",
+  "top_bill": 562.5,
+  "cheap_model": "MiniMax-M2.7",
+  "cheap_bill": 52.5,
+  "share_of_top_score": 0.867,
+  "price_ratio": 0.093
+ },
+ "shu": {
+  "band_40_45": {
+   "n": 25,
+   "min_price": 0.15,
+   "max_price": 35.0,
+   "ratio": 233
+  },
+  "open_median_price": 0.49,
+  "closed_median_price": 3.44,
+  "best_open_score": 49.8,
+  "top_score": 57.2
+ }
+}

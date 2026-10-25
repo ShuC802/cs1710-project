@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-CS171 group project, dashboard-prototype milestone (Milestone 6): two coordinated-view prototypes for **The Evolution of LLM Value**, built on the REAL Kaggle data (LLM Price-Performance Tracker, scrape 2026-03-31).
+CS171 group project, Prototype V1 (builds on Milestone 6 dashboards): a story site (hook, rising insights, main message, solution) with two coordinated-view prototypes for **The Evolution of LLM Value**, built on the REAL Kaggle data (LLM Price-Performance Tracker, scrape 2026-03-31).
 
 **Shared question:** for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month?
 
@@ -8,7 +8,9 @@ CS171 group project, dashboard-prototype milestone (Milestone 6): two coordinate
 - `dashboards/data/*.csv` Kaggle file; `dashboards/prep_data.py` -> `dashboards/data/models.json` (no imputation, nulls stay null).
 - `dashboards/src/common.js|css` shared rules and chart components (good enough, monthly bill, flagship matching, scatter, bill, flagship chart).
 - `dashboards/src/a.*` Design A (performance first: brush -> filter bill; hover/click -> link). `dashboards/src/b.*` Design B (budget first: shared controls filter; click/hover link).
-- `python3 dashboards/build.py` inlines d3 + data + code into single-file pages `docs/a/index.html`, `docs/b/index.html` (GitHub Pages serves `main:/docs`).
+- `dashboards/prep_data.py` also writes `story_stats.json` (all numbers quoted on the story page) and `cleaning_log.txt`. Do not hand-type numbers into the page; add them to the stats.
+- `dashboards/src/index.html` + `story.js` = story page. `make_drafts.py` makes the three draft PNGs in `docs/img/`.
+- `python3 dashboards/build.py` inlines d3 + data + stats + code into ONE page `docs/index.html` (GitHub Pages serves `main:/docs`).
 - Old SvelteKit prototypes (`src/`, `docs/p1`, `docs/p2`) used a synthetic seed dataset, not the Kaggle data. Do not cite them.
 
 ## Shared definitions (never redefine per page)

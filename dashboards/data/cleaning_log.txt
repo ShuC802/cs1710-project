@@ -1,0 +1,18 @@
+Raw file: 453 rows x 34 columns, scrape date ['2026-03-31']
+  duplicates in model_slug: 0
+  duplicates in model_name: 0
+  duplicates in aa_id: 0
+  blended price = input + 0.25 * (output - input) in 270 of 315 priced rows with different in/out prices
+Kept 12 of 34 columns: model_slug->id, model_name->name, provider->provider, is_open_source->open, release_year->year, aa_intelligence_index->general, aa_coding_index->coding, aa_math_index->math, blended_cost_usd_per_1m->price, input_cost_usd_per_1m->pin, output_cost_usd_per_1m->pout, output_tokens_per_second->speed
+Dropped columns (not used by the story): provider_slug, aa_id, composite_benchmark, mmlu_pro, gpqa_diamond, humanitys_last_exam, livecodebench, scicode, math_500, aime_2025, pricing_tier, time_to_first_token_s, time_to_first_answer_s, chatbot_arena_elo, arena_elo_ci95, arena_votes, parameter_count, intelligence_per_dollar, price_performance_ratio, elo_benchmark_blend, speed_per_dollar, scrape_date
+Missing values in kept fields (left as null):
+  year: 161 of 453
+  general: 7 of 453
+  coding: 97 of 453
+  math: 185 of 453
+  price: 138 of 453
+  speed: 174 of 453
+  free models (price = 0): 16; models with no price: 138 (104 of them open-weight)
+Wrote dashboards/data/models.json (453 models)
+Story population (general score and price > 0): 297 models. Coding: 262, math: 198
+Wrote dashboards/data/story_stats.json
