@@ -269,7 +269,6 @@
         const last = r.year === C.COHORTS[C.COHORTS.length - 1];
         const fy = y(f.price);
         if (r.paid && r.paid.length) {
-          r.paid.forEach((q) => col.append("circle").attr("cx", cx + (((hash(q.id) % 1000) / 1000) - 0.5) * 34).attr("cy", y(q.price)).attr("r", 2.4).attr("class", "dot " + (q.open ? "open" : "prop")).attr("opacity", 0.4));
           const c = r.cheapest, cy = y(c.price), k = f.price / c.price;
           col.append("line").attr("class", "stem").attr("x1", cx).attr("x2", cx).attr("y1", fy + 7).attr("y2", cy - 6);
           col.append("circle").attr("cx", cx).attr("cy", cy).attr("r", 6).attr("class", "hollow " + (c.open ? "open" : "prop"));
