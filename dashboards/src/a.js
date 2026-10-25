@@ -14,15 +14,23 @@
   });
   $("pct").oninput = (e) => { S.pct = +e.target.value; render(); };
 
+  // ---- task selector: which task drives ② and ③ ----
+  const taskSeg = $("task");
+  C.TASKS.forEach((t) => {
+    const b = document.createElement("button");
+    b.textContent = t.label; b.dataset.k = t.key;
+    b.onclick = () => { S.active = t.key; S.brush = null; S.flagYear = null; clearBrushes(); render(); };
+    taskSeg.appendChild(b);
+  });
+
   // ---- panels (one scatter per task) ----
   const panels = {};
   C.TASKS.forEach((t) => {
     const card = document.createElement("section");
     card.className = "card"; card.id = "a-card-" + t.key;
-    card.innerHTML = `<div class="row-between"><h2>① ${t.label}</h2><button class="plain" data-use="${t.key}">Use for ② ③</button></div>
+    card.innerHTML = `<h2>① ${t.label}</h2>
       <p class="hint" id="a-hint-${t.key}"></p><div id="a-sc-${t.key}"></div><p class="coverage" id="a-cov-${t.key}">${C.coverage(t.key).text}</p>`;
     $("panels").appendChild(card);
-    card.querySelector("button[data-use]").onclick = () => { S.active = t.key; S.brush = null; S.flagYear = null; clearBrushes(); render(); };
     panels[t.key] = C.scatter({ root: $("sc-" + t.key), task: t.key, w: 400, h: 300, r: 3.6, brushable: true }, {
       onBrush: (ids) => {
         if (ids === null) { if (S.brush && S.brush.task === t.key) { S.brush = null; render(); } return; }
@@ -96,10 +104,10 @@
       const pass = C.plottable(t.key).filter((m) => m[t.key] >= thr).length;
       $("hint-" + t.key).textContent = `${pass} models clear ≥ ${thr.toFixed(1)}` + (S.brush && S.brush.task === t.key ? ` · brushed ${S.brush.ids.size}` : "");
     });
-    $("active-name").textContent = C.taskOf(S.active).label;
+    taskSeg.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.k === S.active));
     $("bill-title").textContent = `② Monthly bill · ${C.usageOf(S.usage).label.toLowerCase()} use (${C.fmtTok(tok())} tokens)`;
-    $("flag-title").textContent = `③ What did the same capability cost later? · ${C.taskOf(S.active).short}`;
-    $("flag-hint").textContent = S.flagYear ? `Linked: in the ${C.taskOf(S.active).short} scatter ① the ${S.flagYear} flagship is ringed, the shaded region is "cheaper and still good enough", and only its later-cohort matches stay bright. Click the column again to clear.` : "Click a cohort column to see its flagship and its cheaper matches in the active scatter.";
+    $("flag-title").textContent = `③ Best model of each year vs. cheaper later models that match · ${C.taskOf(S.active).short}`;
+    $("flag-hint").textContent = S.flagYear ? `Linked: in the ${C.taskOf(S.active).short} scatter ① the best model of ${S.flagYear} is ringed. Models inside the shaded box are cheaper and match it; the rest fade. Click the column again to clear.` : "Click a column to see, in scatter ①, that year's best model and the cheaper later models that match it.";
     flags.update({ task: S.active, pct: S.pct, selectedYear: S.flagYear });
     renderLinked();
   }

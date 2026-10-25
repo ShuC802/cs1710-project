@@ -45,17 +45,16 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
 
 <section class="story" id="hook">
   <p class="step">1 · Hook</p>
-  <h2>A 2024 flagship against what you can buy now</h2>
+  <h2>The best model of 2024 against what you can buy now</h2>
   <p class="big" id="hook-line"></p>
   <div class="controls card">
     <div class="grp"><span class="lab">Task</span><div class="seg" id="h-task"></div></div>
-    <label class="grow"><span class="lab">Match = at least <b id="h-pct-val"></b> of the flagship's score</span><input id="h-pct" type="range" min="50" max="100" step="1" value="100"></label>
+    <label class="grow"><span class="lab">A later model counts as a match if it scores at least <b id="h-pct-val"></b> of that year's best score</span><input id="h-pct" type="range" min="50" max="100" step="1" value="100"></label>
   </div>
   <div class="layoutB">
-    <section class="card"><h2 id="h-flag-title"></h2><p class="hint" id="h-flag-hint"></p><div id="h-flags"></div>
-      <p class="coverage">Flagship = best-scoring paid model of its release-year cohort. Match = cheaper model from a later cohort that scores at least the chosen share of the flagship's score. Free models are counted, never priced. 2023 is left out (7 models).</p></section>
+    <section class="card"><h2 id="h-flag-title"></h2><p class="hint" id="h-flag-hint"></p><div id="h-flags"></div><div class="legend"><span><i class="blk"></i>best model of that year</span><span><i class="hol" style="border-color:var(--open)"></i><i class="hol" style="border-color:var(--prop)"></i>cheapest later model that matches (blue = open weights, orange = proprietary)</span><span><i class="sm"></i>other later models that match</span></div><p class="coverage">Best model = highest-scoring paid model released that year. Match = released later, cheaper, and scoring at least the chosen share of its score. Free models are counted, not priced. 2023 is left out (7 models).</p></section>
     <section class="card"><h2 id="h-sc-title"></h2><p class="hint" id="h-sc-hint"></p><div id="h-sc"></div>
-      <div class="legend"><span><i style="background:var(--open)"></i>open weights</span><span><i style="background:var(--prop)"></i>proprietary</span><span><i class="ringi"></i>flagship</span><span>left lane = free</span></div>
+      <div class="legend"><span><i style="background:var(--open)"></i>open weights</span><span><i style="background:var(--prop)"></i>proprietary</span><span><i class="ringi"></i>best model of the selected year</span><span>shaded box = cheaper and still matches</span><span>left strip = free models</span></div>
       <p class="coverage" id="h-cov"></p>
       <p class="explain link"><strong>Link</strong> · clicking a column in the left chart only highlights models here. Nothing is removed.</p></section>
   </div>
@@ -94,7 +93,7 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
 </section>
 
 <footer id="about">
-  <p><b>Data.</b> LLM Price-Performance Tracker (Kaggle), 453 model endpoints, scrape of 2026-03-31. The tracker reports only a release year, so time views use year cohorts. 138 models have no price and 161 have no year; each view says what it leaves out. Nothing is imputed. Cleaning steps: <code>dashboards/data/cleaning_log.txt</code>.</p>
+  <p><b>Data.</b> LLM Price-Performance Tracker (Kaggle), 453 model endpoints, scrape of 2026-03-31. The tracker reports only a release year, so time views group models by release year. 138 models have no price and 161 have no year; each view says what it leaves out. Nothing is imputed. Cleaning steps: <code>dashboards/data/cleaning_log.txt</code>.</p>
   <p><b>Prices</b> are list prices. Reasoning models often emit more tokens, so real bills run higher.</p>
 </footer>
 </main>

@@ -185,7 +185,7 @@
         if (s.region) {
           const rx = Math.max(x(Math.min(Math.max(s.region.price, PRICE_DOMAIN[0]), PRICE_DOMAIN[1])), freeW + gap);
           region.style("display", null).attr("x", 0).attr("y", 0).attr("width", rx).attr("height", Math.max(y(s.region.score), 0));
-          regionLab.style("display", null).attr("x", 4).attr("y", 12).text("later & cheaper & still good enough");
+          regionLab.style("display", null).attr("x", 4).attr("y", 12).text("cheaper and still matches");
         } else { region.style("display", "none"); regionLab.style("display", "none"); }
         const ringed = [];
         const sel = s.selectedId && data.find((q) => q.id === s.selectedId); if (sel) ringed.push({ d: sel, big: true });
@@ -252,7 +252,7 @@
       const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`);
       g.append("g").attr("class", "grid").call(d3.axisLeft(y).tickValues([0.1, 1, 10, 100]).tickSize(-iw).tickFormat(""));
       g.append("g").attr("class", "axis").call(d3.axisLeft(y).tickValues([0.1, 1, 10, 100]).tickFormat((v) => "$" + v).tickSizeOuter(0));
-      g.append("text").attr("class", "title-lab").attr("x", 0).attr("y", -9).text("price per 1M tokens (log) · ● flagship · ○ cheapest later model that is good enough");
+      g.append("text").attr("class", "title-lab").attr("x", 0).attr("y", -9).text("price per 1M tokens (log scale)");
       const tIdx = C.taskOf(s.task).short;
       const back = g.append("g"), front = g.append("g").style("pointer-events", "none");
       rows.forEach((r, i) => {
@@ -261,7 +261,7 @@
           .append("rect").attr("class", "hit").attr("x", i * colW + 3).attr("y", -4).attr("width", colW - 6).attr("height", ih + m.b - 6).attr("rx", 8);
         const col = front.append("g").attr("class", "flag-row");
         const lab = col.append("text").attr("text-anchor", "middle").attr("x", cx).attr("y", ih + 18);
-        lab.append("tspan").attr("class", "t1").style("font-weight", 600).text(`${r.year} flagship`);
+        lab.append("tspan").attr("class", "t1").style("font-weight", 600).text(`Best of ${r.year}`);
         if (!r.flag) { lab.append("tspan").attr("x", cx).attr("dy", "1.3em").text("no scored, priced model"); return; }
         const f = r.flag;
         lab.append("tspan").attr("x", cx).attr("dy", "1.3em").text(C.trunc(f.name, 26));
@@ -275,11 +275,11 @@
           col.append("circle").attr("cx", cx).attr("cy", cy).attr("r", 6).attr("class", "hollow " + (c.open ? "open" : "prop"));
           col.append("text").attr("class", "mult halo").attr("x", cx + 24).attr("y", (fy + cy) / 2).attr("dy", "0.33em").text(`${k >= 10 ? k.toFixed(0) : k.toFixed(1)}× cheaper`);
           col.append("text").attr("class", "halo").attr("x", cx + 12).attr("y", cy + 14).text(C.fmtUSD(c.price));
-          lab.append("tspan").attr("x", cx).attr("dy", "1.3em").style("fill", "var(--text-muted)").text(`${r.later.length} match${r.later.length > 1 ? "es" : ""}${r.free.length ? `, ${r.free.length} free` : ""}`);
+          lab.append("tspan").attr("x", cx).attr("dy", "1.3em").style("fill", "var(--text-muted)").text(`${r.later.length} cheaper later model${r.later.length > 1 ? "s match" : " matches"}${r.free.length ? ` (${r.free.length} free)` : ""}`);
           lab.append("tspan").attr("x", cx).attr("dy", "1.3em").text(`○ ${C.trunc(c.name, 24)}`);
         } else {
-          col.append("text").attr("class", "halo").attr("x", cx + 14).attr("y", fy).attr("dy", "0.33em").style("fill", "var(--text-muted)").text(last ? "newest cohort:" : "no cheaper");
-          col.append("text").attr("class", "halo").attr("x", cx + 14).attr("y", fy).attr("dy", "1.6em").style("fill", "var(--text-muted)").text(last ? "nothing later yet" : "match" + (r.free.length ? `; ${r.free.length} free` : ""));
+          col.append("text").attr("class", "halo").attr("x", cx + 14).attr("y", fy).attr("dy", "0.33em").style("fill", "var(--text-muted)").text(last ? "latest year:" : "no cheaper");
+          col.append("text").attr("class", "halo").attr("x", cx + 14).attr("y", fy).attr("dy", "1.6em").style("fill", "var(--text-muted)").text(last ? "no later models" : "match" + (r.free.length ? `; ${r.free.length} free` : ""));
         }
         col.append("circle").attr("cx", cx).attr("cy", fy).attr("r", 7.5).attr("class", "big");
       });

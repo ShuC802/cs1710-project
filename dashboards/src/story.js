@@ -23,15 +23,15 @@
     const t = C.taskOf(S.task);
     seg.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.k === S.task));
     $("h-pct-val").textContent = S.pct + "%";
-    $("h-flag-title").textContent = `Same capability, later price · ${t.short}`;
-    $("h-sc-title").textContent = `Where the models sit · ${t.short}`;
-    $("h-flag-hint").textContent = "Click a cohort column to see its flagship and its cheaper matches on the right.";
+    $("h-flag-title").textContent = `What each year's best model cost, and what matches it later · ${t.short}`;
+    $("h-sc-title").textContent = `All models: price vs. score · ${t.short}`;
+    $("h-flag-hint").textContent = "Each column is a release year. The black dot is that year's best paid model. The open circle is the cheapest model released later that still matches its score, and the line is the saving. Click a column to see these models on the right.";
     flags.update({ task: S.task, pct: S.pct, selectedYear: S.year });
     const r = row();
     const focus = r && r.flag ? new Set([r.flag.id, ...r.later.map((m) => m.id)]) : null;
     sc.update({ pct: S.pct, tokens: 0, pass: () => true, focusIds: focus, selectedId: r && r.flag ? r.flag.id : null,
       region: r && r.flag ? { price: r.flag.price, score: (S.pct / 100) * r.flag[S.task] } : null });
-    $("h-sc-hint").textContent = r && r.flag ? `${S.year} flagship ringed: ${r.flag.name}. Shaded = later, cheaper and still within ${S.pct}% of its score; ${r.later.length} models.` : "No cohort selected: all models shown.";
+    $("h-sc-hint").textContent = r && r.flag ? `Each dot is a model: further right costs more, higher scores better. Ringed: ${r.flag.name}, best of ${S.year} (score ${r.flag[S.task]}, ${usd(r.flag.price)}). The shaded box holds the ${r.later.length} later models that are cheaper and score at least ${S.pct}% of that. The rest fade.` : "Each dot is a model: further right costs more, higher scores better. Click a column on the left to focus on one year.";
     const c = C.coverage(S.task); $("h-cov").textContent = c.text;
   }
   render();
@@ -40,7 +40,7 @@
   $("msg-line").innerHTML = `On the general index, a model that reaches 80% of the best score costs <b>${(M.price_ratio * 100).toFixed(0)}%</b> as much as the top model. At 100M tokens a month that is <b>${bill(M.cheap_bill)}</b> against <b>${bill(M.top_bill)}</b>.`;
   const T = STATS.tasks, sp = STATS.speed, sh = STATS.shu;
   const cards = [
-    [`${H.ratio}×`, `${H.old.name} (2024 flagship) vs ${H.new.name} at a similar score`],
+    [`${H.ratio}×`, `${H.old.name} (best of 2024) vs ${H.new.name} at a similar score`],
     [`${Math.round(T.general.share_of_top_score * 100)}%`, `of the top general score, from ${T.general.cheapest_model}, at ${Math.round(T.general.price_ratio * 100)}% of the price`],
     [`${Math.round(1 / T.math.price_ratio)}×`, `cheaper for math: ${T.math.cheapest_model} at ${Math.round(T.math.share_of_top_score * 100)}% of the best score`],
     [`${sp.n_fast} of ${sp.n_speed_known}`, `good-enough general models with known speed run at 100 tokens/s or more`],
