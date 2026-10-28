@@ -2,7 +2,9 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Evolution of LLM Value</title>
 <style>/*CSS*/
-html { scroll-behavior: smooth; scroll-padding-top: 52px; }
+html { scroll-behavior: smooth; scroll-padding-top: 52px; scroll-snap-type: y mandatory; }
+/* one step per screen: each step snaps to the middle; one more scroll moves to the next. Taller steps scroll freely inside. */
+.hero, section.story { min-height: calc(100vh - 52px); box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; scroll-snap-align: center; scroll-snap-stop: always; }
 nav.top { position: sticky; top: 0; z-index: 5; background: var(--surface-0); border-bottom: 1px solid var(--border); margin: 0 -16px; padding: 10px 16px; gap: 20px; flex-wrap: wrap; }
 nav.top b { margin-right: auto; }
 nav.top a { text-decoration: none; color: var(--text-secondary); }
@@ -10,7 +12,7 @@ nav.top a:hover { color: var(--accent); }
 .hero { padding: 26px 0 8px; }
 .hero h1 { font-size: 30px; line-height: 1.15; margin: 4px 0 8px; max-width: 860px; }
 .hero p { max-width: 760px; color: var(--text-secondary); font-size: 15px; }
-section.story { margin-top: 38px; }
+section.story { margin-top: 0; padding: 24px 0; }
 .step { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin: 0; }
 section.story > h2 { font-size: 22px; margin: 2px 0 6px; }
 .big { font-size: 17px; max-width: 860px; margin: 4px 0 12px; }
@@ -33,7 +35,7 @@ section.story > h2 { font-size: 22px; margin: 2px 0 6px; }
 .tabs button[aria-selected=true] b { color: var(--accent); }
 .design[hidden] { display: none; }
 #h-sc .thr, #h-sc .thr-fill, #h-sc .thr-lab { display: none; }
-footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 12px; max-width: 900px; }
+footer { scroll-snap-align: end; margin-top: 0; font-size: 12.5px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 12px; max-width: 900px; }
 </style></head>
 <body><main>
 <nav class="top"><b>The Evolution of LLM Value</b><a href="#hook">1 Hook</a><a href="#insights">2 Rising insights</a><a href="#message">3 Main message</a><a href="#explore">4 Explore</a><a href="#about">About the data</a></nav>
