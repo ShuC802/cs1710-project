@@ -151,9 +151,49 @@ nav.top { position: sticky; top: 0; z-index: 5; background: var(--surface-0); bo
 nav.top b { margin-right: auto; }
 nav.top a { text-decoration: none; color: var(--text-secondary); }
 nav.top a:hover { color: var(--accent); }
-.hero { padding: 26px 0 8px; }
-.hero h1 { font-size: 30px; line-height: 1.15; margin: 4px 0 8px; max-width: 860px; }
-.hero p { max-width: 760px; color: var(--text-secondary); font-size: 15px; }
+/* Hero: a poster drawn from the data (story.js heroBg). Its own paper palette, light and dark. */
+.hero { --paper: #f1eadb; --ink: #1f1b15; --ink-2: #5e5547; --ink-3: #9a8f7c; --h-open: #34508f; --h-prop: #c46a26; --verm: #c0391f; --blend: multiply; }
+@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .hero { --paper: #191612; --ink: #f0e8d8; --ink-2: #c2b8a5; --ink-3: #7d7465; --h-open: #7d9be0; --h-prop: #e08a45; --verm: #f0644a; --blend: screen; } }
+:root[data-theme="dark"] .hero { --paper: #191612; --ink: #f0e8d8; --ink-2: #c2b8a5; --ink-3: #7d7465; --h-open: #7d9be0; --h-prop: #e08a45; --verm: #f0644a; --blend: screen; }
+body { overflow-x: clip; }
+.hero { position: relative; isolation: isolate; overflow: hidden; margin-inline: calc(50% - 50vw); padding: 56px max(16px, calc(50vw - 604px)) 28px;
+  justify-content: space-between !important; background: var(--paper); color: var(--ink); --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif; font-family: var(--serif); }
+#hero-bg { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; }
+.hero-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 32px; }
+.hero-kicker { font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 14px; }
+.hero h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(36px, 4.6vw, 64px); line-height: 1.02; letter-spacing: -0.015em; margin: 0; max-width: 10em; color: var(--ink); }
+.hero h1 em { font-style: italic; color: var(--verm); }
+.hero-num { text-align: right; margin: 6px 0 0; }
+.hero-num .n { display: block; font-size: clamp(72px, 10vw, 156px); line-height: .82; letter-spacing: -0.04em; color: var(--verm); font-variant-numeric: lining-nums; }
+.hero-num .d { display: block; margin-top: 12px; font-size: 15px; font-style: italic; line-height: 1.45; color: var(--ink-2); }
+.hero-num .d b { font-style: normal; font-weight: 600; color: var(--ink); }
+.hero-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
+.hero-lede { max-width: 470px; font-size: 16px; line-height: 1.5; color: var(--ink-2); margin: 0 0 10px; }
+.hero-scroll { font-style: italic; font-size: 16px; color: var(--ink); text-decoration: underline; text-decoration-color: var(--verm); text-underline-offset: 5px; text-decoration-thickness: 1.5px; }
+.hero-scroll:hover { color: var(--verm); }
+.hero-cap { max-width: 440px; margin: 0; font-size: 12.5px; font-style: italic; line-height: 1.5; color: var(--ink-3); text-align: right; }
+#hero-bg text { font-family: var(--serif); }
+#hero-bg .h-rule line { stroke: var(--ink-3); stroke-opacity: .28; stroke-dasharray: 1 5; }
+#hero-bg .h-rule text { fill: var(--ink-3); font-size: 12px; font-style: italic; }
+#hero-bg .h-strokes { mix-blend-mode: var(--blend); }
+#hero-bg .h-strokes line { stroke-width: 1.1; stroke-linecap: round; opacity: .3; }
+#hero-bg .h-strokes line.hit { stroke-width: 2; opacity: .85; }
+#hero-bg .h-strokes .open { stroke: var(--h-open); fill: var(--h-open); }
+#hero-bg .h-strokes .prop { stroke: var(--h-prop); fill: var(--h-prop); }
+#hero-bg .h-base { stroke: var(--ink); stroke-width: 1.2; }
+#hero-bg .h-year text { fill: var(--ink-2); font-size: 15px; font-style: italic; }
+#hero-bg .h-ink path { fill: none; stroke: var(--ink); stroke-linecap: round; stroke-linejoin: round; }
+#hero-bg .h-ink .thick { stroke-width: 3.2; }
+#hero-bg .h-ink .thin { stroke-width: 1.1; opacity: .55; }
+#hero-bg .h-art { opacity: .36; }
+#hero-bg .h-note circle { fill: var(--paper); stroke: var(--verm); stroke-width: 2; }
+#hero-bg .h-note .flag circle { fill: var(--ink); stroke: var(--paper); stroke-width: 2; }
+#hero-bg .h-note .stem { stroke: var(--ink); stroke-width: 1.6; opacity: .7; }
+#hero-bg .h-note text { fill: var(--ink-2); font-size: 14px; paint-order: stroke; stroke: var(--paper); stroke-width: 5px; stroke-linejoin: round; }
+#hero-bg .h-note .k { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; fill: var(--verm); }
+#hero-bg .h-note .nm { font-size: 15px; fill: var(--ink); }
+#hero-bg .h-note .sub { font-style: italic; }
+@media (max-width: 760px) { #hero-bg .h-note { opacity: .4; } .hero-head { grid-template-columns: 1fr; gap: 18px; } .hero-num { text-align: left; } .hero-cap { text-align: left; } }
 section.story { margin-top: 0; padding: 24px 0; }
 .step { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin: 0; }
 section.story > h2 { font-size: 22px; margin: 2px 0 6px; }
@@ -182,9 +222,22 @@ footer { scroll-snap-align: end; margin-top: 0; font-size: 12.5px; color: var(--
 <body><main>
 <nav class="top"><b>The Evolution of LLM Value</b><a href="#hook">1 Hook</a><a href="#insights">2 Rising insights</a><a href="#message">3 Main message</a><a href="#explore">4 Explore</a><a href="#about">About the data</a></nav>
 
-<header class="hero">
-  <h1>The same model quality costs far less than it did two years ago.</h1>
-  <p>Scroll down. We start with one comparison, widen it to the whole market, state what it means for someone choosing a model, and end with two tools to test it on your own task and budget.</p>
+<header class="hero" id="hero">
+  <svg id="hero-bg" aria-hidden="true"></svg>
+  <div class="hero-head">
+    <div>
+      <p class="hero-kicker">The Evolution of LLM Value</p>
+      <h1>The same model quality costs far less than it did <em>two years ago.</em></h1>
+    </div>
+    <p class="hero-num"><span class="n" id="hero-ratio"></span><span class="d" id="hero-sub"></span></p>
+  </div>
+  <div class="hero-foot">
+    <div>
+      <p class="hero-lede">We start with one comparison, widen it to the whole market, say what it means for someone choosing a model, and end with two tools to test it on your own task and budget.</p>
+      <a class="hero-scroll" href="#hook">Begin with one comparison ↓</a>
+    </div>
+    <p class="hero-cap" id="hero-cap"></p>
+  </div>
 </header>
 
 <section class="story" id="hook">
@@ -938,6 +991,100 @@ footer { scroll-snap-align: end; margin-top: 0; font-size: 12.5px; color: var(--
   const H = STATS.hook, M = STATS.main, cov = STATS.coverage;
   const usd = (v) => C.fmtUSD(v);
   const bill = (v) => "$" + v.toFixed(2);
+
+  // hero: a poster made of the data. Every paid model with a general score is one thin stroke rising from the
+  // baseline to its list price (log), placed in its release-year column. The ink line is the cheapest paid model
+  // scoring at least the 2024 best model's score (a16z "LLMflation" style), drawn through the real dots.
+  $("hero-ratio").textContent = `${H.ratio}×`;
+  $("hero-sub").innerHTML = `cheaper, for the same score.<br><b>${H.old.name}</b>, 2024: ${usd(H.old.price)} per million tokens.<br><b>${H.new.name}</b>, 2026: ${usd(H.new.price)}.`;
+  (function heroBg() {
+    const svg = d3.select("#hero-bg"), hero = $("hero");
+    const pts = DATA.models.filter((m) => m.price > 0 && !m.free && m.general != null && C.COHORTS.includes(m.year));
+    const thr = H.old.score;
+    const steps = C.COHORTS.map((y) => ({ year: y, m: d3.least(pts.filter((m) => m.year <= y && m.general >= thr), (m) => m.price) }));
+    $("hero-cap").innerHTML = `Each stroke is one of ${pts.length} paid models, rising to its list price per million tokens (log scale), in its release-year column; darker strokes score at least ${thr}, ${H.old.name}'s general score. The ink line is the cheapest of those. The data has release years only, so placement inside a year is arbitrary.`;
+    // deterministic position inside each year's column
+    const jit = (s) => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return ((h >>> 0) % 1000) / 1000; };
+    const px = (m) => m.year + 0.06 + 0.88 * jit(m.id);
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let lastW = 0, lastH = 0;
+    function draw() {
+      const w = hero.clientWidth, h = hero.clientHeight;
+      if (!w || (Math.abs(w - lastW) < 2 && Math.abs(h - lastH) < 2)) return;
+      lastW = w; lastH = h;
+      svg.selectAll("*").remove();
+      const narrow = w < 760, pad = Math.max(16, w / 2 - 604);
+      const L = pad, R = pad + (narrow ? 0 : 44), base = hero.querySelector(".hero-foot").offsetTop - 44, top = h * (narrow ? 0.34 : 0.26);
+      const x = d3.scaleLinear([C.COHORTS[0], C.COHORTS[C.COHORTS.length - 1] + 1], [L, w - R]);
+      const y = d3.scaleLog(d3.extent(pts, (m) => m.price), [base, top]).nice();
+      const defs = svg.append("defs");
+      // hand-drawn wobble for the ink line, paper grain for the whole poster
+      defs.append("filter").attr("id", "hero-ink").call((f) => {
+        f.append("feTurbulence").attr("type", "fractalNoise").attr("baseFrequency", 0.035).attr("numOctaves", 2).attr("seed", 7).attr("result", "n");
+        f.append("feDisplacementMap").attr("in", "SourceGraphic").attr("in2", "n").attr("scale", 2.4);
+      });
+      defs.append("filter").attr("id", "hero-grain").call((f) => {
+        f.append("feTurbulence").attr("type", "fractalNoise").attr("baseFrequency", 0.9).attr("numOctaves", 2).attr("seed", 3);
+        f.append("feColorMatrix").attr("values", "0 0 0 0 0.4  0 0 0 0 0.33  0 0 0 0 0.22  0 0 0 0.09 0");
+      });
+      svg.append("rect").attr("width", w).attr("height", h).attr("filter", "url(#hero-grain)");
+      // everything data-ish sits in one dimmed layer; the words on top stay the main read
+      const art = svg.append("g").attr("class", "h-art");
+      // faint price rules
+      const decades = y.ticks().filter((v) => Number.isInteger(Math.log10(v)) && v <= 100);
+      const rules = art.append("g").attr("class", "h-rule");
+      rules.selectAll("line").data(decades).join("line").attr("x1", L).attr("x2", w - R).attr("y1", y).attr("y2", y);
+      if (!narrow) rules.selectAll("text").data(decades).join("text").attr("x", w - R + 8).attr("y", y).attr("dy", "0.32em").text((v) => C.fmtUSD(v).replace(".00", ""));
+      // the strokes
+      const g = art.append("g").attr("class", "h-strokes");
+      const s = g.selectAll("line").data(d3.sort(pts, (m) => m.general >= thr)).join("line")
+        .attr("class", (m) => (m.open ? "open" : "prop") + (m.general >= thr ? " hit" : ""))
+        .attr("x1", (m) => x(px(m))).attr("x2", (m) => x(px(m))).attr("y1", base).attr("y2", base);
+      s.transition().duration(reduce ? 0 : 900).ease(d3.easeCubicOut).delay((m) => (reduce ? 0 : (x(px(m)) - L) / (w - L - R) * 1100))
+        .attr("y2", (m) => y(m.price));
+      g.selectAll("circle").data(pts.filter((m) => m.general >= thr)).join("circle")
+        .attr("class", (m) => (m.open ? "open" : "prop")).attr("r", 1.9).attr("cx", (m) => x(px(m))).attr("cy", (m) => y(m.price))
+        .attr("opacity", 0).transition().delay((m) => (reduce ? 0 : 700 + (x(px(m)) - L) / (w - L - R) * 1100)).duration(reduce ? 0 : 400).attr("opacity", 1);
+      // baseline and year labels
+      art.append("line").attr("class", "h-base").attr("x1", L).attr("x2", w - R).attr("y1", base).attr("y2", base);
+      art.append("g").attr("class", "h-year").selectAll("text").data(C.COHORTS).join("text")
+        .attr("x", (d) => x(d) + 2).attr("y", base + 22).text((d) => d);
+      // ink line through the real cheapest-match dots
+      const line = [];
+      steps.filter((st, i) => !i || st.m !== steps[i - 1].m).forEach((st, i) => { if (i) line.push([px(st.m), line[line.length - 1][1]]); line.push([px(st.m), st.m.price]); });
+      line.push([x.domain()[1], line[line.length - 1][1]]);
+      const d = d3.line((p) => x(p[0]), (p) => y(p[1]))(line);
+      const ink = art.append("g").attr("class", "h-ink").attr("filter", "url(#hero-ink)");
+      const paths = [ink.append("path").attr("d", d).attr("class", "thick"), ink.append("path").attr("d", d).attr("class", "thin").attr("transform", "translate(1.5,-2)")];
+      paths.forEach((p, i) => {
+        const len = p.node().getTotalLength();
+        p.attr("stroke-dasharray", len).attr("stroke-dashoffset", reduce ? 0 : len)
+          .transition().delay(reduce ? 0 : 1300 + i * 250).duration(reduce ? 0 : 2000).ease(d3.easeCubicInOut).attr("stroke-dashoffset", 0);
+      });
+      // annotations: each year's flagship (best paid model, the shared definition) and the two cheaper steps
+      const flags = C.flagships("general", 100).filter((r) => r.flag).map((r) => r.flag);
+      const sc = (m) => `score ${m.general} · ${usd(m.price)}`;
+      const notes = [
+        ...flags.map((m, i) => ({ m, kind: "flag", kicker: `Best of ${m.year}`, text: `${C.trunc(m.name, narrow ? 16 : 26)}`, sub: sc(m), dx: i === flags.length - 1 ? -12 : 12, dy: i === 1 ? 24 : -50, end: i === flags.length - 1 })),
+        ...(narrow ? [] : [{ m: steps[1].m, kind: "cheap", text: `${steps[1].m.name}`, sub: `score ${steps[1].m.general} · ${usd(steps[1].m.price)}`, dx: -12, dy: 22, end: true }]),
+        { m: steps[steps.length - 1].m, kind: "cheap", text: narrow ? "" : steps[steps.length - 1].m.name, sub: `score ${steps[steps.length - 1].m.general} · ${usd(steps[steps.length - 1].m.price)}`, dx: 12, dy: 24 },
+      ];
+      const a = svg.append("g").attr("class", "h-note").selectAll("g").data(narrow ? notes.filter((n) => n.kind === "flag") : notes).join("g")
+        .attr("class", (n) => n.kind).attr("opacity", 0);
+      a.filter((n) => n.kind === "flag").append("line").attr("class", "stem")
+        .attr("x1", (n) => x(px(n.m))).attr("x2", (n) => x(px(n.m))).attr("y1", base).attr("y2", (n) => y(n.m.price));
+      const at = a.append("g").attr("transform", (n) => `translate(${x(px(n.m))},${y(n.m.price)})`);
+      at.append("circle").attr("r", (n) => (n.kind === "flag" ? 5 : 4.5));
+      const t = at.append("text").attr("x", (n) => n.dx).attr("y", (n) => n.dy).attr("text-anchor", (n) => (n.end ? "end" : "start"));
+      if (narrow) t.remove();
+      t.filter((n) => n.kicker).append("tspan").attr("class", "k").text((n) => n.kicker);
+      t.append("tspan").attr("class", "nm").attr("x", (n) => n.dx).attr("dy", (n) => (n.kicker ? "1.25em" : 0)).text((n) => n.text);
+      t.append("tspan").attr("class", "sub").attr("x", (n) => n.dx).attr("dy", (n) => (n.text ? "1.25em" : 0)).text((n) => n.sub);
+      a.transition().delay((n, i) => (reduce ? 0 : 1600 + i * 350)).duration(reduce ? 0 : 500).attr("opacity", 1);
+    }
+    draw();
+    new ResizeObserver(draw).observe(hero);
+  })();
 
   $("hook-line").innerHTML = `In 2024, <b>${H.old.name}</b> scored ${H.old.score} on the general index at <b>${usd(H.old.price)}</b> per million tokens. Today <b>${H.new.name}</b> scores ${H.new.score} at <b>${usd(H.new.price)}</b>: about <b>${H.ratio}× cheaper</b> for the same level or better.`;
 
