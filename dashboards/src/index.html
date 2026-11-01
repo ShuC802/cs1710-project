@@ -39,13 +39,13 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
 <nav class="top"><b>The Evolution of LLM Value</b><a href="#hook">1 Hook</a><a href="#insights">2 Rising insights</a><a href="#message">3 Main message</a><a href="#explore">4 Explore</a><a href="#about">About the data</a></nav>
 
 <header class="hero">
-  <h1>The same model quality costs far less than it did two years ago.</h1>
-  <p>Scroll down. We start with one comparison, widen it to the whole market, state what it means for someone choosing a model, and end with two tools to test it on your own task and budget.</p>
+  <h1 id="hero-h1"></h1>
+  <p>Scroll down. We start with one comparison, widen it to the whole market, state what the numbers show, and end with two ways to test it on your own task and budget. All numbers come from one snapshot of list prices and benchmark scores, taken on 2026-03-31.</p>
 </header>
 
 <section class="story" id="hook">
   <p class="step">1 · Hook</p>
-  <h2>The best model of 2024 against what you can buy now</h2>
+  <h2>The best model of 2024 and its later, cheaper matches</h2>
   <p class="big" id="hook-line"></p>
   <div class="controls card">
     <div class="grp"><span class="lab">Task</span><div class="seg" id="h-task"></div></div>
@@ -74,7 +74,7 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
 
 <section class="story" id="message">
   <p class="step">3 · Main message</p>
-  <h2>Chasing the top score is rarely worth the price</h2>
+  <h2>Near-top scores can cost a fraction of the top price</h2>
   <p class="big" id="msg-line"></p>
   <div class="stats" id="stats"></div>
   <p class="coverage" id="msg-cov"></p>
@@ -83,10 +83,10 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
 <section class="story" id="explore">
   <p class="step">4 · Solution</p>
   <h2>Test it on your own task and budget</h2>
-  <p class="big">Two prototypes answer the same question: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? Design A starts from performance, Design B from budget.</p>
+  <p class="big">Two ways in to the same question: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? Explore by performance (Design A) starts from price-versus-score plots. Explore by budget (Design B) starts from your requirements.</p>
   <div class="tabs" role="tablist">
-    <button role="tab" id="tab-a" aria-selected="true"><b>Design A</b> · start from performance <span style="color:var(--text-muted)">(brush &amp; link)</span></button>
-    <button role="tab" id="tab-b" aria-selected="false"><b>Design B</b> · start from budget <span style="color:var(--text-muted)">(shared filters)</span></button>
+    <button role="tab" id="tab-a" aria-selected="true"><b>Explore by performance</b> <span style="color:var(--text-muted)">(Design A · brush &amp; link)</span></button>
+    <button role="tab" id="tab-b" aria-selected="false"><b>Explore by budget</b> <span style="color:var(--text-muted)">(Design B · shared filters)</span></button>
   </div>
   <div class="design" id="design-a">/*A*/</div>
   <div class="design" id="design-b" hidden>/*B*/</div>
@@ -94,7 +94,7 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
 
 <footer id="about">
   <p><b>Data.</b> LLM Price-Performance Tracker (Kaggle), 453 model endpoints, scrape of 2026-03-31. The tracker reports only a release year, so time views group models by release year. 138 models have no price and 161 have no year; each view says what it leaves out. Nothing is imputed. Cleaning steps: <code>dashboards/data/cleaning_log.txt</code>.</p>
-  <p><b>Prices</b> are list prices. Reasoning models often emit more tokens, so real bills run higher.</p>
+  <p><b>Prices</b> are list prices from the 2026-03-31 snapshot and may have changed since. Reasoning models often emit more tokens, so real bills can run higher.</p>
 </footer>
 </main>
 <script>/*D3*/</script>

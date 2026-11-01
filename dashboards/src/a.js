@@ -86,10 +86,13 @@
     const rows = billRows(), shown = rows.slice(0, 12);
     const t = C.taskOf(S.active);
     const paid = rows.filter((m) => !m.free).length;
+    const th = C.thr(S.active, S.pct);
+    const belowIds = S.brush ? new Set(rows.filter((m) => !(m[S.active] >= th)).map((m) => m.id)) : null;
+    const brushNote = belowIds ? (belowIds.size ? ` Your brush overrides the good-enough line (≥ ${th.toFixed(1)}): <b>${belowIds.size}</b> of these score below it, marked ▾.` : ` All of them clear the good-enough line (≥ ${th.toFixed(1)}).`) : "";
     $("bill-hint").innerHTML = S.brush
-      ? `<b>Filter:</b> the ${rows.length} models inside your ${t.short} brush (${rows.length - paid} free). Showing the ${shown.length} cheapest.`
+      ? `<b>Filter:</b> the ${rows.length} models inside your ${t.short} brush (${rows.length - paid} free). Showing the ${shown.length} cheapest.${brushNote}`
       : `Models that clear the good-enough line in <b>${t.short}</b>: ${rows.length}. Showing the ${shown.length} cheapest. Brush any scatter to choose your own region.`;
-    bill.update({ rows: shown, tokens: tok(), hoverId: S.hover, empty: "No model clears this line. Lower the good-enough slider or brush a region." });
+    bill.update({ rows: shown, tokens: tok(), hoverId: S.hover, below: belowIds, empty: "No model clears this line. Lower the good-enough slider or brush a region." });
   }
 
   function render() {

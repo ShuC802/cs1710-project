@@ -181,13 +181,13 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
 <nav class="top"><b>The Evolution of LLM Value</b><a href="#hook">1 Hook</a><a href="#insights">2 Rising insights</a><a href="#message">3 Main message</a><a href="#explore">4 Explore</a><a href="#about">About the data</a></nav>
 
 <header class="hero">
-  <h1>The same model quality costs far less than it did two years ago.</h1>
-  <p>Scroll down. We start with one comparison, widen it to the whole market, state what it means for someone choosing a model, and end with two tools to test it on your own task and budget.</p>
+  <h1 id="hero-h1"></h1>
+  <p>Scroll down. We start with one comparison, widen it to the whole market, state what the numbers show, and end with two ways to test it on your own task and budget. All numbers come from one snapshot of list prices and benchmark scores, taken on 2026-03-31.</p>
 </header>
 
 <section class="story" id="hook">
   <p class="step">1 · Hook</p>
-  <h2>The best model of 2024 against what you can buy now</h2>
+  <h2>The best model of 2024 and its later, cheaper matches</h2>
   <p class="big" id="hook-line"></p>
   <div class="controls card">
     <div class="grp"><span class="lab">Task</span><div class="seg" id="h-task"></div></div>
@@ -216,7 +216,7 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
 
 <section class="story" id="message">
   <p class="step">3 · Main message</p>
-  <h2>Chasing the top score is rarely worth the price</h2>
+  <h2>Near-top scores can cost a fraction of the top price</h2>
   <p class="big" id="msg-line"></p>
   <div class="stats" id="stats"></div>
   <p class="coverage" id="msg-cov"></p>
@@ -225,12 +225,12 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
 <section class="story" id="explore">
   <p class="step">4 · Solution</p>
   <h2>Test it on your own task and budget</h2>
-  <p class="big">Two prototypes answer the same question: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? Design A starts from performance, Design B from budget.</p>
+  <p class="big">Two ways in to the same question: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? Explore by performance (Design A) starts from price-versus-score plots. Explore by budget (Design B) starts from your requirements.</p>
   <div class="tabs" role="tablist">
-    <button role="tab" id="tab-a" aria-selected="true"><b>Design A</b> · start from performance <span style="color:var(--text-muted)">(brush &amp; link)</span></button>
-    <button role="tab" id="tab-b" aria-selected="false"><b>Design B</b> · start from budget <span style="color:var(--text-muted)">(shared filters)</span></button>
+    <button role="tab" id="tab-a" aria-selected="true"><b>Explore by performance</b> <span style="color:var(--text-muted)">(Design A · brush &amp; link)</span></button>
+    <button role="tab" id="tab-b" aria-selected="false"><b>Explore by budget</b> <span style="color:var(--text-muted)">(Design B · shared filters)</span></button>
   </div>
-  <div class="design" id="design-a"><h2 class="dh">Design A · Start from performance</h2>
+  <div class="design" id="design-a"><h2 class="dh">Explore by performance (Design A)</h2>
 <p class="lede">Here you start from the scatters: <b>brush a region</b> in any task to see the monthly bill of exactly those models; hover a bill row to find the same model in all three tasks.</p>
 
 <div class="controls card">
@@ -264,7 +264,7 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
 <li><b>Free</b> models are open-weight models with a $0 list price. They are shown in a separate lane and never used for "× cheaper".</li>
 </ul></details>
 </div>
-  <div class="design" id="design-b" hidden><h2 class="dh">Design B · Start from budget and usage</h2>
+  <div class="design" id="design-b" hidden><h2 class="dh">Explore by budget (Design B)</h2>
 <p class="lede">Here you start from the controls: <b>set a task, usage, quality bar, budget, license and speed floor</b>, then read the surviving models and see where they sit on the price × score map.</p>
 
 <div class="controls card">
@@ -303,7 +303,7 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
 
 <footer id="about">
   <p><b>Data.</b> LLM Price-Performance Tracker (Kaggle), 453 model endpoints, scrape of 2026-03-31. The tracker reports only a release year, so time views group models by release year. 138 models have no price and 161 have no year; each view says what it leaves out. Nothing is imputed. Cleaning steps: <code>dashboards/data/cleaning_log.txt</code>.</p>
-  <p><b>Prices</b> are list prices. Reasoning models often emit more tokens, so real bills run higher.</p>
+  <p><b>Prices</b> are list prices from the 2026-03-31 snapshot and may have changed since. Reasoning models often emit more tokens, so real bills can run higher.</p>
 </footer>
 </main>
 <script>// https://d3js.org v7.9.0 Copyright 2010-2023 Mike Bostock
@@ -664,7 +664,7 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
         .on("click", (ev, q) => hooks.onClick && hooks.onClick(q.d.id));
       row.append("rect").attr("class", "hit").attr("x", -m.l).attr("width", o.w).attr("y", 0).attr("height", rowH);
       row.append("circle").attr("cx", -m.l + 8).attr("cy", rowH / 2).attr("r", 4.5).attr("class", (q) => "dot " + (q.d.open ? "open" : "prop"));
-      row.append("text").attr("class", "nm").attr("x", -m.l + 18).attr("y", rowH / 2).attr("dy", "0.33em").text((q) => C.trunc(q.d.name, 32));
+      row.append("text").attr("class", "nm").attr("x", -m.l + 18).attr("y", rowH / 2).attr("dy", "0.33em").text((q) => (s.below && s.below.has(q.d.id) ? "▾ " : "") + C.trunc(q.d.name, 30));
       // free rows: no bar, an explicit label (a $0 list price is not a $0 bill: you host it)
       row.filter((q) => q.d.free).append("text").attr("class", "val").attr("x", 4).attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-secondary)").text("free list price · you host it");
       row.filter((q) => !q.d.free).each(function (q) {
@@ -816,10 +816,13 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
     const rows = billRows(), shown = rows.slice(0, 12);
     const t = C.taskOf(S.active);
     const paid = rows.filter((m) => !m.free).length;
+    const th = C.thr(S.active, S.pct);
+    const belowIds = S.brush ? new Set(rows.filter((m) => !(m[S.active] >= th)).map((m) => m.id)) : null;
+    const brushNote = belowIds ? (belowIds.size ? ` Your brush overrides the good-enough line (≥ ${th.toFixed(1)}): <b>${belowIds.size}</b> of these score below it, marked ▾.` : ` All of them clear the good-enough line (≥ ${th.toFixed(1)}).`) : "";
     $("bill-hint").innerHTML = S.brush
-      ? `<b>Filter:</b> the ${rows.length} models inside your ${t.short} brush (${rows.length - paid} free). Showing the ${shown.length} cheapest.`
+      ? `<b>Filter:</b> the ${rows.length} models inside your ${t.short} brush (${rows.length - paid} free). Showing the ${shown.length} cheapest.${brushNote}`
       : `Models that clear the good-enough line in <b>${t.short}</b>: ${rows.length}. Showing the ${shown.length} cheapest. Brush any scatter to choose your own region.`;
-    bill.update({ rows: shown, tokens: tok(), hoverId: S.hover, empty: "No model clears this line. Lower the good-enough slider or brush a region." });
+    bill.update({ rows: shown, tokens: tok(), hoverId: S.hover, below: belowIds, empty: "No model clears this line. Lower the good-enough slider or brush a region." });
   }
 
   function render() {
@@ -889,8 +892,11 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
     if (!m) { el.innerHTML = "Click a bar or a dot to pin a model here."; return; }
     const sc = C.TASKS.map((t) => `<tr><th>${t.index}</th><td class="v">${m[t.key] == null ? "no score" : m[t.key]}</td></tr>`).join("");
     const costs = C.USAGE.map((u) => `<tr><th>${u.label} · ${C.fmtTok(u.tokens)} tok/mo</th><td class="v">${m.price == null ? "no price" : m.free ? "$0 list (you host)" : C.fmtUSD(C.bill(m, u.tokens).total)}</td></tr>`).join("");
+    const why = { score: `its ${C.taskOf(S.task).short} score is below the good-enough line or missing`, license: "the license filter", budget: "the monthly budget", speed: "the minimum speed (or its speed is unknown)" };
+    const f = m.price == null ? "price" : fails(m);
+    const note = f ? `<p class="hint" style="margin:4px 0 6px"><b>Excluded by current controls:</b> ${f === "price" ? "it has no listed price, so the price views leave it out" : why[f]}. It stays pinned from earlier.</p>` : "";
     el.innerHTML = `<b style="color:var(--text-primary)">${m.name}</b> · ${m.provider} · ${m.open ? "open weights" : "proprietary"} · ${m.year ?? "year unknown"}
-      <table>${sc}<tr><th>Speed</th><td class="v">${m.speed == null ? "unknown" : m.speed + " tok/s"}</td></tr>${costs}</table>`;
+      ${note}<table>${sc}<tr><th>Speed</th><td class="v">${m.speed == null ? "unknown" : m.speed + " tok/s"}</td></tr>${costs}</table>`;
   }
 
   function draw() {
@@ -937,7 +943,13 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
   const usd = (v) => C.fmtUSD(v);
   const bill = (v) => "$" + v.toFixed(2);
 
-  $("hook-line").innerHTML = `In 2024, <b>${H.old.name}</b> scored ${H.old.score} on the general index at <b>${usd(H.old.price)}</b> per million tokens. Today <b>${H.new.name}</b> scores ${H.new.score} at <b>${usd(H.new.price)}</b>: about <b>${H.ratio}× cheaper</b> for the same level or better.`;
+  $("hero-h1").textContent = `In the March 2026 snapshot, a model that scores higher than 2024's best costs ${usd(H.new.price)} per million tokens instead of ${usd(H.old.price)}.`;
+  function hookLine() {
+    const t = C.taskOf(S.task), r = C.flagships(S.task, S.pct).find((q) => q.year === 2024);
+    if (!r || !r.flag || !r.cheapest) { $("hook-line").textContent = `No paid model released after 2024 is cheaper and scores at least ${S.pct}% of the best 2024 ${t.short} model.`; return; }
+    const f = r.flag, c = r.cheapest, k = f.price / c.price;
+    $("hook-line").innerHTML = `In the March 2026 snapshot, <b>${c.name}</b> scores ${c[S.task]} on ${t.short} at <b>${usd(c.price)}</b> per million tokens. The best paid 2024 model, <b>${f.name}</b>, scores ${f[S.task]} at <b>${usd(f.price)}</b>. That is <b>${k >= 10 ? k.toFixed(0) : k.toFixed(1)}× cheaper</b>${c[S.task] >= f[S.task] ? " for an equal or higher score" : ` for at least ${S.pct}% of its score`}.`;
+  }
 
   // controls
   const seg = $("h-task");
@@ -957,6 +969,7 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
     $("h-flag-title").textContent = `What each year's best model cost, and what matches it later · ${t.short}`;
     $("h-sc-title").textContent = `All models: price vs. score · ${t.short}`;
     $("h-flag-hint").textContent = "Each column is a release year. The black dot is that year's best paid model. The open circle is the cheapest model released later that still matches its score, and the line is the saving. Click a column to see these models on the right.";
+    hookLine();
     flags.update({ task: S.task, pct: S.pct, selectedYear: S.year });
     const r = row();
     const focus = r && r.flag ? new Set([r.flag.id, ...r.later.map((m) => m.id)]) : null;
@@ -968,16 +981,16 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
   render();
 
   // main message
-  $("msg-line").innerHTML = `On the general index, a model that reaches 80% of the best score costs <b>${(M.price_ratio * 100).toFixed(0)}%</b> as much as the top model. At 100M tokens a month that is <b>${bill(M.cheap_bill)}</b> against <b>${bill(M.top_bill)}</b>.`;
+  $("msg-line").innerHTML = `On the general index, the cheapest paid model that reaches 80% of the best score (<b>${M.cheap_model}</b>) costs <b>${(M.price_ratio * 100).toFixed(0)}%</b> of the top model's price (<b>${M.top_model}</b>): <b>${bill(M.cheap_bill)}</b> against <b>${bill(M.top_bill)}</b> a month at 100M tokens.`;
   const T = STATS.tasks, sp = STATS.speed, sh = STATS.shu;
   const cards = [
-    [`${H.ratio}×`, `${H.old.name} (best of 2024) vs ${H.new.name} at a similar score`],
+    [`${H.ratio}×`, `${H.old.name} (best paid model of 2024, score ${H.old.score}) vs ${H.new.name} (score ${H.new.score})`],
     [`${Math.round(T.general.share_of_top_score * 100)}%`, `of the top general score, from ${T.general.cheapest_model}, at ${Math.round(T.general.price_ratio * 100)}% of the price`],
-    [`${Math.round(1 / T.math.price_ratio)}×`, `cheaper for math: ${T.math.cheapest_model} at ${Math.round(T.math.share_of_top_score * 100)}% of the best score`],
+    [`${Math.round(1 / T.math.price_ratio)}×`, `cheaper than the top math model: ${T.math.cheapest_model} reaches ${Math.round(T.math.share_of_top_score * 100)}% of the best math score`],
     [`${sp.n_fast} of ${sp.n_speed_known}`, `good-enough general models with known speed run at 100 tokens/s or more`],
   ];
   $("stats").innerHTML = cards.map(([n, d]) => `<div class="stat"><div class="n">${n}</div><div class="d">${d}</div></div>`).join("");
-  $("msg-cov").textContent = `Based on ${cov.n_general_paid} paid models with a general score (${cov.n_coding_paid} for coding, ${cov.n_math_paid} for math). ${cov.n_no_price} of ${cov.n_models} models have no price and ${cov.n_free} are free; neither group is counted in price ratios. Only 6 models score above 50, so the top end is thin. List prices only.`;
+  $("msg-cov").textContent = `Based on ${cov.n_general_paid} paid models with a general score (${cov.n_coding_paid} for coding, ${cov.n_math_paid} for math). ${cov.n_no_price} of ${cov.n_models} models have no price and ${cov.n_free} are free; neither group is counted in price ratios. Only 6 models score above 50, so the top end is thin. List prices only; reasoning models often use more tokens, so real bills can be higher.`;
 })();
 </script>
 <script>
