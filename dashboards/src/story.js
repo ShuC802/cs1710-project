@@ -10,13 +10,14 @@
   // baseline to its list price (log), placed in its release-year column. The ink line is the cheapest paid model
   // scoring at least the 2024 best model's score (a16z "LLMflation" style), drawn through the real dots.
   $("hero-ratio").textContent = `${H.ratio}×`;
-  $("hero-sub").innerHTML = `cheaper, for the same score.<br><b>${H.old.name}</b>, 2024: ${usd(H.old.price)} per million tokens.<br><b>${H.new.name}</b>, 2026: ${usd(H.new.price)}.`;
+  const heroSub = `cheaper, for the same score.<br><b>${H.old.name}</b>, 2024: ${usd(H.old.price)} per million tokens.<br><b>${H.new.name}</b>, 2026: ${usd(H.new.price)}.`;
+  $("hero-sub").innerHTML = heroSub;
   (function heroBg() {
     const svg = d3.select("#hero-bg"), hero = $("hero");
     const pts = DATA.models.filter((m) => m.price > 0 && !m.free && m.general != null && C.COHORTS.includes(m.year));
     const thr = H.old.score;
     const steps = C.COHORTS.map((y) => ({ year: y, m: d3.least(pts.filter((m) => m.year <= y && m.general >= thr), (m) => m.price) }));
-    $("hero-cap").innerHTML = `Each stroke is one of ${pts.length} paid models, rising to its list price per million tokens (log scale), in its release-year column; darker strokes score at least ${thr}, ${H.old.name}'s general score. The ink line is the cheapest of those. The data has release years only, so placement inside a year is arbitrary.`;
+    $("hero-cap").innerHTML = `<b>Move your mouse along the line to travel in time.</b><br>Each stroke is one of ${pts.length} paid models, rising to its list price per million tokens (log scale), in its release-year column; darker strokes score at least ${thr}, ${H.old.name}'s general score. The ink line is the cheapest of those. The data has release years only, so placement inside a year is arbitrary.`;
     // deterministic position inside each year's column
     const jit = (s) => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return ((h >>> 0) % 1000) / 1000; };
     const px = (m) => m.year + 0.06 + 0.88 * jit(m.id);
@@ -95,9 +96,34 @@
       t.append("tspan").attr("class", "nm").attr("x", (n) => n.dx).attr("dy", (n) => (n.kicker ? "1.25em" : 0)).text((n) => n.text);
       t.append("tspan").attr("class", "sub").attr("x", (n) => n.dx).attr("dy", (n) => (n.text ? "1.25em" : 0)).text((n) => n.sub);
       a.transition().delay((n, i) => (reduce ? 0 : 1600 + i * 350)).duration(reduce ? 0 : 500).attr("opacity", 1);
+
+      // time probe: move the mouse along the poster; the big number reads the ink line at that point
+      const knots = steps.filter((st, i) => !i || st.m !== steps[i - 1].m).map((st) => st.m);
+      const probe = svg.append("g").attr("class", "h-probe").attr("opacity", 0);
+      const pLine = probe.append("line").attr("y1", top - 24).attr("y2", base);
+      const pDot = probe.append("circle").attr("r", 6);
+      hero.onpointerleave = probeOff;
+      hero.onpointermove = narrow ? null : (ev) => {
+        if (ev.pointerType !== "mouse") return;
+        const mx = ev.clientX - hero.getBoundingClientRect().left;
+        if (mx < L || mx > w - R) return probeOff();
+        const t = x.invert(mx), cur = knots.filter((m) => px(m) <= t).at(-1);
+        d3.select("#hero-ratio").interrupt("count");
+        probe.attr("opacity", 1);
+        pLine.attr("x1", mx).attr("x2", mx);
+        pDot.attr("cx", mx).attr("cy", cur ? y(cur.price) : -99);
+        $("hero-ratio").textContent = cur ? `${Math.round(H.old.price / cur.price)}×` : "—";
+        $("hero-sub").innerHTML = cur
+          ? `cheaper than <b>${H.old.name}</b>, for the same score, here.<br>Cheapest at that score so far: <b>${cur.name}</b> (${cur.year}), ${usd(cur.price)}.<br>Move away to reset.`
+          : `Nothing in the data scores ${thr} yet.<br>Keep moving right.`;
+      };
+      function probeOff() { probe.attr("opacity", 0); $("hero-ratio").textContent = `${H.ratio}×`; $("hero-sub").innerHTML = heroSub; }
     }
     draw();
     new ResizeObserver(draw).observe(hero);
+    // the big number counts up while the ink line draws
+    if (!reduce) d3.select("#hero-ratio").transition("count").delay(1300).duration(2000).ease(d3.easeCubicInOut)
+      .tween("text", function () { return (t) => { this.textContent = `${Math.round(1 + (H.ratio - 1) * t)}×`; }; });
   })();
 
   $("hook-line").innerHTML = `In 2024, <b>${H.old.name}</b> scored ${H.old.score} on the general index at <b>${usd(H.old.price)}</b> per million tokens. Today <b>${H.new.name}</b> scores ${H.new.score} at <b>${usd(H.new.price)}</b>: about <b>${H.ratio}× cheaper</b> for the same level or better.`;
@@ -119,7 +145,7 @@
     $("h-pct-val").textContent = S.pct + "%";
     $("h-flag-title").textContent = `What each year's best model cost, and what matches it later · ${t.short}`;
     $("h-sc-title").textContent = `All models: price vs. score · ${t.short}`;
-    $("h-flag-hint").textContent = "Each column is a release year. The black dot is that year's best paid model. The open circle is the cheapest model released later that still matches its score, and the line is the saving. Click a column to see these models on the right.";
+    $("h-flag-hint").textContent = "Each column is a release year. The black dot is that year's best paid model. The open circle is the cheapest model released later that still matches its score, and the line is the saving. Click a column to see these models in the chart below.";
     flags.update({ task: S.task, pct: S.pct, selectedYear: S.year });
     const r = row();
     const focus = r && r.flag ? new Set([r.flag.id, ...r.later.map((m) => m.id)]) : null;
@@ -140,5 +166,53 @@
     [`${sp.n_fast} of ${sp.n_speed_known}`, `good-enough general models with known speed run at 100 tokens/s or more`],
   ];
   $("stats").innerHTML = cards.map(([n, d]) => `<div class="stat"><div class="n">${n}</div><div class="d">${d}</div></div>`).join("");
+
+  // page motion: entrance reveals, counting numbers, reading progress, current section in the nav, draft index + lightbox
+  (function pageMotion() {
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const count = (el) => {
+      const m = el.textContent.match(/^(\d+)(.*)$/s);
+      if (!m) return;
+      const to = +m[1], rest = m[2];
+      d3.select(el).transition().duration(1400).ease(d3.easeCubicOut).tween("text", () => (t) => { el.textContent = Math.round(1 + (to - 1) * t) + rest; });
+    };
+    if (!reduce) {
+      document.documentElement.classList.add("js-rv");
+      const io = new IntersectionObserver((es) => es.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("in");
+        e.target.querySelectorAll(".stat .n").forEach(count);
+        io.unobserve(e.target);
+      }), { rootMargin: "0px 0px -8% 0px" });
+      document.querySelectorAll(".split > .txt, .split > .vis, #explore").forEach((box) => {
+        [...box.children].filter((c) => !c.classList.contains("design")).forEach((c, i) => { c.classList.add("rv"); c.style.transitionDelay = `${Math.min(i, 5) * 70}ms`; io.observe(c); });
+      });
+    }
+    // reading progress and the current section
+    const bar = $("progress"), root = document.documentElement;
+    const onScroll = () => { bar.style.transform = `scaleX(${root.scrollTop / (root.scrollHeight - root.clientHeight) || 0})`; };
+    addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    const links = [...document.querySelectorAll("nav.top a")];
+    const navIo = new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting) links.forEach((a) => a.toggleAttribute("aria-current", a.getAttribute("href") === "#" + e.target.id));
+    }), { rootMargin: "-45% 0px -50% 0px" });
+    ["hero", "hook", "insights", "message", "explore", "about"].forEach((id) => navIo.observe($(id)));
+    // drafts: an index row and its figure light up together; a figure opens large on click
+    document.querySelectorAll(".draft-index a").forEach((a) => {
+      const f = $(a.dataset.f), on = (v) => { a.classList.toggle("on", v); f.classList.toggle("on", v); };
+      for (const el of [a, f]) { el.addEventListener("mouseenter", () => on(true)); el.addEventListener("mouseleave", () => on(false)); }
+      a.onclick = (ev) => { ev.preventDefault(); f.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); };
+    });
+    const lb = document.createElement("div");
+    lb.id = "lightbox";
+    document.body.appendChild(lb);
+    document.querySelectorAll(".drafts figure").forEach((f) => (f.onclick = () => {
+      lb.innerHTML = `<figure>${f.querySelector("img").outerHTML}${f.querySelector("figcaption").outerHTML}</figure>`;
+      lb.classList.add("on");
+    }));
+    lb.onclick = () => lb.classList.remove("on");
+    addEventListener("keydown", (e) => { if (e.key === "Escape") lb.classList.remove("on"); });
+  })();
   $("msg-cov").textContent = `Based on ${cov.n_general_paid} paid models with a general score (${cov.n_coding_paid} for coding, ${cov.n_math_paid} for math). ${cov.n_no_price} of ${cov.n_models} models have no price and ${cov.n_free} are free; neither group is counted in price ratios. Only 6 models score above 50, so the top end is thin. List prices only.`;
 })();

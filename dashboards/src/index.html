@@ -2,9 +2,36 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Evolution of LLM Value</title>
 <style>/*CSS*/
-html { scroll-behavior: smooth; scroll-padding-top: 52px; scroll-snap-type: y mandatory; }
-/* one step per screen: each step snaps to the middle; one more scroll moves to the next. Taller steps scroll freely inside. */
-.hero, section.story { min-height: calc(100vh - 52px); box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; scroll-snap-align: center; scroll-snap-stop: always; }
+html { scroll-behavior: smooth; scroll-padding-top: 60px; }
+.hero { min-height: calc(100vh - 52px); box-sizing: border-box; display: flex; flex-direction: column; }
+section.story { padding: 120px 0 40px; }
+/* split: the words stay pinned on the left while the evidence scrolls past on the right */
+.split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 8fr); gap: 56px; align-items: start; }
+.split > .txt { position: sticky; top: 84px; }
+.split > .txt .controls { margin-top: 18px; }
+.split > .vis { display: grid; gap: 28px; }
+#hook .layoutB { grid-template-columns: 1fr; gap: 28px; }
+#progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 100%; background: var(--emph); transform-origin: 0 50%; transform: scaleX(0); }
+nav.top a[aria-current] { color: var(--text-primary); text-decoration: underline; text-decoration-color: var(--emph); text-underline-offset: 6px; text-decoration-thickness: 1.5px; }
+.draft-index { list-style: none; padding: 0; margin: 22px 0 0; border-top: 1px solid var(--text-primary); }
+.draft-index a { display: grid; grid-template-columns: 34px 1fr; padding: 12px 0; border-bottom: 1px solid var(--border); color: var(--text-secondary); text-decoration: none; font-size: 16px; line-height: 1.35; transition: color .2s, padding .2s; }
+.draft-index a span { color: var(--emph); font-style: italic; font-size: 20px; line-height: 1; }
+.draft-index a:hover, .draft-index a.on { color: var(--text-primary); padding-left: 6px; }
+.fig-n { position: absolute; left: -14px; top: -18px; font-size: 44px; font-style: italic; line-height: 1; color: var(--emph); }
+#message .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 32px; margin: 0; }
+#message .stat .n { font-size: clamp(56px, 6.4vw, 96px); }
+/* entrance: hidden only when JS is running and motion is welcome */
+.js-rv .rv { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+.js-rv .rv.in { opacity: 1; transform: none; }
+/* draft lightbox */
+#lightbox { position: fixed; inset: 0; z-index: 20; display: none; place-items: center; padding: 32px; background: rgb(20 16 10 / .72); cursor: zoom-out; }
+#lightbox.on { display: grid; }
+#lightbox figure { margin: 0; max-width: min(1100px, 100%); background: var(--surface-1); padding: 18px; border-radius: 2px; }
+#lightbox img { width: 100%; height: auto; display: block; background: #fff; }
+#lightbox figcaption { margin-top: 10px; font-size: 15px; color: var(--text-secondary); }
+@media (max-width: 980px) { .split { grid-template-columns: 1fr; gap: 24px; } .split > .txt { position: static; } }
+@media (max-width: 760px) { html nav.top { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; gap: 18px; scrollbar-width: none; } nav.top b { display: none; } }
+@media (prefers-reduced-motion: reduce) { .js-rv .rv { opacity: 1; transform: none; transition: none; } }
 nav.top { position: sticky; top: 0; z-index: 5; background: var(--surface-0); border-bottom: 1px solid var(--text-primary); margin: 0 -16px; padding: 12px 16px 10px; gap: 22px; flex-wrap: wrap; font-size: 15px; }
 nav.top b { margin-right: auto; font-weight: 400; letter-spacing: .14em; text-transform: uppercase; font-size: 13px; }
 nav.top a { text-decoration: none; color: var(--text-secondary); }
@@ -51,14 +78,21 @@ body { overflow-x: clip; }
 #hero-bg .h-note .k { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; fill: var(--verm); }
 #hero-bg .h-note .nm { font-size: 15px; fill: var(--ink); }
 #hero-bg .h-note .sub { font-style: italic; }
+#hero-bg .h-probe line { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; }
+#hero-bg .h-probe circle { fill: var(--verm); stroke: var(--paper); stroke-width: 2.5; }
+.hero-cap b { font-weight: 400; color: var(--ink-2); }
+@media (hover: hover) and (min-width: 761px) { .hero { cursor: crosshair; } .hero a { cursor: pointer; } }
 @media (max-width: 760px) { #hero-bg .h-note { opacity: .4; } .hero-head { grid-template-columns: 1fr; gap: 18px; } .hero-num { text-align: left; } .hero-cap { text-align: left; } }
 section.story { margin-top: 0; padding: 24px 0; }
 .step { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--emph); margin: 0 0 6px; }
-section.story > h2 { font-size: clamp(28px, 3.4vw, 42px); line-height: 1.08; letter-spacing: -0.015em; margin: 0 0 10px; max-width: 22em; }
+section.story > h2, .split > .txt > h2 { font-size: clamp(28px, 3.4vw, 42px); line-height: 1.08; letter-spacing: -0.015em; margin: 0 0 10px; max-width: 22em; }
 .big { font-size: 19px; line-height: 1.5; max-width: 820px; margin: 4px 0 16px; color: var(--text-secondary); }
 .big b { color: var(--text-primary); font-weight: 600; }
-.drafts { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
-.drafts figure { margin: 0; }
+.drafts { display: grid; grid-template-columns: 1fr; gap: 56px; }
+.drafts figure { position: relative; margin: 0; cursor: zoom-in; transition: transform .35s cubic-bezier(.2,.7,.2,1); }
+.drafts figure img { transition: box-shadow .35s, border-color .35s; }
+.drafts figure:hover, .drafts figure.on { transform: translateY(-4px); }
+.drafts figure:hover img, .drafts figure.on img { border-color: var(--text-primary); box-shadow: 0 14px 30px rgb(40 30 15 / .14); }
 .drafts img { width: 100%; height: auto; border-radius: 2px; border: 1px solid var(--border); background: #fff; padding: 6px; box-sizing: border-box; }
 .drafts figcaption { font-size: 14px; color: var(--text-secondary); margin-top: 8px; }
 .tag { display: inline-block; font: 10.5px/1.6 var(--sans); letter-spacing: .1em; text-transform: uppercase; padding: 0 6px; border: 1px solid var(--text-muted); border-radius: 2px; color: var(--text-muted); margin-right: 6px; }
@@ -66,8 +100,8 @@ section.story > h2 { font-size: clamp(28px, 3.4vw, 42px); line-height: 1.08; let
 .stat { background: transparent; border: 0; border-top: 1px solid var(--text-primary); border-radius: 0; padding: 12px 2px 0; }
 .stat .n { font-size: clamp(40px, 4.6vw, 60px); font-weight: 400; color: var(--emph); line-height: 1; letter-spacing: -0.03em; }
 .stat .d { font-size: 14px; font-style: italic; color: var(--text-secondary); margin-top: 8px; }
-@media (max-width: 980px) { .drafts, .stats { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 620px) { .drafts, .stats { grid-template-columns: 1fr; } }
+@media (max-width: 980px) { .stats { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 620px) { .stats, #message .stats { grid-template-columns: 1fr; } }
 .tabs { display: flex; gap: 8px; margin: 10px 0 4px; flex-wrap: wrap; }
 .tabs { gap: 28px !important; border-bottom: 1px solid var(--border); }
 .tabs button { font: inherit; font-size: 16px; padding: 8px 0 10px; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; color: var(--text-secondary); cursor: pointer; }
@@ -76,10 +110,10 @@ section.story > h2 { font-size: clamp(28px, 3.4vw, 42px); line-height: 1.08; let
 .tabs button[aria-selected=true] b { color: var(--emph); }
 .design[hidden] { display: none; }
 #h-sc .thr, #h-sc .thr-fill, #h-sc .thr-lab { display: none; }
-footer { scroll-snap-align: end; margin-top: 0; font-size: 14px; font-style: italic; color: var(--text-muted); border-top: 1px solid var(--text-primary); padding-top: 14px; max-width: 900px; }
+footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--text-muted); border-top: 1px solid var(--text-primary); padding-top: 14px; max-width: 900px; }
 </style></head>
 <body><main>
-<nav class="top"><b>The Evolution of LLM Value</b><a href="#hook">1 Hook</a><a href="#insights">2 Rising insights</a><a href="#message">3 Main message</a><a href="#explore">4 Explore</a><a href="#about">About the data</a></nav>
+<nav class="top"><b>The Evolution of LLM Value</b><a href="#hook">1 Hook</a><a href="#insights">2 Rising insights</a><a href="#message">3 Main message</a><a href="#explore">4 Explore</a><a href="#about">About the data</a><span id="progress" aria-hidden="true"></span></nav>
 
 <header class="hero" id="hero">
   <svg id="hero-bg" aria-hidden="true"></svg>
@@ -100,6 +134,8 @@ footer { scroll-snap-align: end; margin-top: 0; font-size: 14px; font-style: ita
 </header>
 
 <section class="story" id="hook">
+ <div class="split">
+ <div class="txt">
   <p class="step">1 · Hook</p>
   <h2>The best model of 2024 against what you can buy now</h2>
   <p class="big" id="hook-line"></p>
@@ -107,6 +143,9 @@ footer { scroll-snap-align: end; margin-top: 0; font-size: 14px; font-style: ita
     <div class="grp"><span class="lab">Task</span><div class="seg" id="h-task"></div></div>
     <label class="grow"><span class="lab">A later model counts as a match if it scores at least <b id="h-pct-val"></b> of that year's best score</span><input id="h-pct" type="range" min="50" max="100" step="1" value="100"></label>
   </div>
+  <p class="explain"><strong>Filter</strong> · the task and match sliders remove models and recompute both charts.</p>
+ </div>
+ <div class="vis">
   <div class="layoutB">
     <section class="card"><h2 id="h-flag-title"></h2><p class="hint" id="h-flag-hint"></p><div id="h-flags"></div><div class="legend"><span><i class="blk"></i>best model of that year</span><span><i class="hol" style="border-color:var(--open)"></i><i class="hol" style="border-color:var(--prop)"></i>cheapest later model that matches (blue = open weights, orange = proprietary)</span></div><p class="coverage">Best model = highest-scoring paid model released that year. Match = released later, cheaper, and scoring at least the chosen share of its score. Free models are counted, not priced. 2023 is left out (7 models).</p></section>
     <section class="card"><h2 id="h-sc-title"></h2><p class="hint" id="h-sc-hint"></p><div id="h-sc"></div>
@@ -114,26 +153,44 @@ footer { scroll-snap-align: end; margin-top: 0; font-size: 14px; font-style: ita
       <p class="coverage" id="h-cov"></p>
       <p class="explain link"><strong>Link</strong> · clicking a column in the left chart only highlights models here. Nothing is removed.</p></section>
   </div>
-  <p class="explain"><strong>Filter</strong> · the task and match sliders remove models and recompute both charts.</p>
+ </div>
+ </div>
 </section>
 
 <section class="story" id="insights">
+ <div class="split">
+ <div class="txt">
   <p class="step">2 · Rising insights</p>
   <h2>Is this one example, or the whole market?</h2>
-  <p class="big">Three views widen the hook. Drafts below use the real data; the interactive versions are next.</p>
+  <p class="big">Three views widen the hook. Drafts use the real data; the interactive versions are next.</p>
+  <ol class="draft-index">
+    <li><a href="#d1" data-f="d1"><span>A</span>Price rises with score, but the spread inside a band is huge</a></li>
+    <li><a href="#d2" data-f="d2"><span>B</span>The cheapest good-enough model costs a fraction of the top one</a></li>
+    <li><a href="#d3" data-f="d3"><span>C</span>Cheap does not have to mean slow</a></li>
+  </ol>
+ </div>
+ <div class="vis">
   <div class="drafts">
-    <figure><img src="img/draft-1-price-by-score-band.png" alt="Draft: price by score band"><figcaption><span class="tag">draft</span><b>Price by score band.</b> Median price rises with score: $0.40 below 20, $5.22 above 50. Inside one band the spread is large (40 to 45: 25 models, $0.15 to $35).</figcaption></figure>
-    <figure><img src="img/draft-2-top-vs-cheapest.png" alt="Draft: top vs cheapest good-enough model"><figcaption><span class="tag">draft</span><b>Top vs cheapest good enough.</b> At 80% of the best score, the cheapest model costs 9% (general), 30% (coding) and 2% (math) of the top model's price.</figcaption></figure>
-    <figure><img src="img/draft-3-speed-vs-price.png" alt="Draft: speed against price"><figcaption><span class="tag">draft</span><b>Speed vs price.</b> Of 17 good-enough general models with a speed value, 7 run at 100 tokens/s or more. The cheapest runs at 46.</figcaption></figure>
+    <figure id="d1"><span class="fig-n">A</span><img src="img/draft-1-price-by-score-band.png" alt="Draft: price by score band"><figcaption><span class="tag">draft</span><b>Price by score band.</b> Median price rises with score: $0.40 below 20, $5.22 above 50. Inside one band the spread is large (40 to 45: 25 models, $0.15 to $35).</figcaption></figure>
+    <figure id="d2"><span class="fig-n">B</span><img src="img/draft-2-top-vs-cheapest.png" alt="Draft: top vs cheapest good-enough model"><figcaption><span class="tag">draft</span><b>Top vs cheapest good enough.</b> At 80% of the best score, the cheapest model costs 9% (general), 30% (coding) and 2% (math) of the top model's price.</figcaption></figure>
+    <figure id="d3"><span class="fig-n">C</span><img src="img/draft-3-speed-vs-price.png" alt="Draft: speed against price"><figcaption><span class="tag">draft</span><b>Speed vs price.</b> Of 17 good-enough general models with a speed value, 7 run at 100 tokens/s or more. The cheapest runs at 46.</figcaption></figure>
   </div>
+ </div>
+ </div>
 </section>
 
 <section class="story" id="message">
+ <div class="split">
+ <div class="txt">
   <p class="step">3 · Main message</p>
   <h2>Chasing the top score is rarely worth the price</h2>
   <p class="big" id="msg-line"></p>
-  <div class="stats" id="stats"></div>
   <p class="coverage" id="msg-cov"></p>
+ </div>
+ <div class="vis">
+  <div class="stats" id="stats"></div>
+ </div>
+ </div>
 </section>
 
 <section class="story" id="explore">
