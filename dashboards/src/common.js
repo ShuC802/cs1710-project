@@ -223,7 +223,7 @@
         .on("click", (ev, q) => hooks.onClick && hooks.onClick(q.d.id));
       row.append("rect").attr("class", "hit").attr("x", -m.l).attr("width", o.w).attr("y", 0).attr("height", rowH);
       row.append("circle").attr("cx", -m.l + 8).attr("cy", rowH / 2).attr("r", 4.5).attr("class", (q) => "dot " + (q.d.open ? "open" : "prop"));
-      row.append("text").attr("class", "nm").attr("x", -m.l + 18).attr("y", rowH / 2).attr("dy", "0.33em").text((q) => C.trunc(q.d.name, 32));
+      row.append("text").attr("class", "nm").attr("x", -m.l + 18).attr("y", rowH / 2).attr("dy", "0.33em").text((q) => (s.below && s.below.has(q.d.id) ? "▾ " : "") + C.trunc(q.d.name, 30));
       // free rows: no bar, an explicit label (a $0 list price is not a $0 bill: you host it)
       row.filter((q) => q.d.free).append("text").attr("class", "val").attr("x", 4).attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-secondary)").text("free list price · you host it");
       row.filter((q) => !q.d.free).each(function (q) {

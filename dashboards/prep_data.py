@@ -101,11 +101,12 @@ bands = [(0, 20, "0-20"), (20, 30, "20-30"), (30, 40, "30-40"), (40, 50, "40-50"
 stats["bands"] = [{"band": b, "n": int(((G.general >= lo) & (G.general < hi)).sum()),
                    "median_price": round(float(G[(G.general >= lo) & (G.general < hi)].price.median()), 2)} for lo, hi, b in bands]
 
-# Rising 2: cheapest model that reaches 80% of the best score, per task
+# Rising 2: cheapest model that reaches 80% of the best score, per task.
+# If several models tie for the top score, the cheapest of them is the reference (it does not inflate the savings).
 tasks = {}
 for t in ("general", "coding", "math"):
     s = paid[paid[t].notna()]
-    top = s.loc[s[t].idxmax()]
+    top = s.sort_values([t, "price"], ascending=[False, True]).iloc[0]   # ties on the top score: take the cheaper model
     thr = 0.8 * df[t].max()
     ok = s[s[t] >= thr].sort_values("price")
     c = ok.iloc[0]

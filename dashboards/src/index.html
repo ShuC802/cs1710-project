@@ -17,18 +17,15 @@ nav.top a[aria-current] { color: var(--text-primary); text-decoration: underline
 .draft-index a { display: grid; grid-template-columns: 34px 1fr; padding: 12px 0; border-bottom: 1px solid var(--border); color: var(--text-secondary); text-decoration: none; font-size: 16px; line-height: 1.35; transition: color .2s, padding .2s; }
 .draft-index a span { color: var(--emph); font-style: italic; font-size: 20px; line-height: 1; }
 .draft-index a:hover, .draft-index a.on { color: var(--text-primary); padding-left: 6px; }
+.insight-cards { display: grid; gap: 40px; }
+.insight-cards > .card { position: relative; transition: transform .35s cubic-bezier(.2,.7,.2,1), border-color .35s, box-shadow .35s; }
+.insight-cards > .card.on { transform: translateY(-4px); border-color: var(--text-primary); box-shadow: 0 14px 30px rgb(40 30 15 / .12); }
 .fig-n { position: absolute; left: -14px; top: -18px; font-size: 44px; font-style: italic; line-height: 1; color: var(--emph); }
 #message .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 32px; margin: 0; }
 #message .stat .n { font-size: clamp(56px, 6.4vw, 96px); }
 /* entrance: hidden only when JS is running and motion is welcome */
 .js-rv .rv { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
 .js-rv .rv.in { opacity: 1; transform: none; }
-/* draft lightbox */
-#lightbox { position: fixed; inset: 0; z-index: 20; display: none; place-items: center; padding: 32px; background: rgb(20 16 10 / .72); cursor: zoom-out; }
-#lightbox.on { display: grid; }
-#lightbox figure { margin: 0; max-width: min(1100px, 100%); background: var(--surface-1); padding: 18px; border-radius: 2px; }
-#lightbox img { width: 100%; height: auto; display: block; background: #fff; }
-#lightbox figcaption { margin-top: 10px; font-size: 15px; color: var(--text-secondary); }
 @media (max-width: 980px) { .split { grid-template-columns: 1fr; gap: 24px; } .split > .txt { position: static; } }
 @media (max-width: 760px) { html nav.top { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; gap: 18px; scrollbar-width: none; } nav.top b { display: none; } }
 @media (prefers-reduced-motion: reduce) { .js-rv .rv { opacity: 1; transform: none; transition: none; } }
@@ -88,13 +85,6 @@ section.story { margin-top: 0; padding: 24px 0; }
 section.story > h2, .split > .txt > h2 { font-size: clamp(28px, 3.4vw, 42px); line-height: 1.08; letter-spacing: -0.015em; margin: 0 0 10px; max-width: 22em; }
 .big { font-size: 19px; line-height: 1.5; max-width: 820px; margin: 4px 0 16px; color: var(--text-secondary); }
 .big b { color: var(--text-primary); font-weight: 600; }
-.drafts { display: grid; grid-template-columns: 1fr; gap: 56px; }
-.drafts figure { position: relative; margin: 0; cursor: zoom-in; transition: transform .35s cubic-bezier(.2,.7,.2,1); }
-.drafts figure img { transition: box-shadow .35s, border-color .35s; }
-.drafts figure:hover, .drafts figure.on { transform: translateY(-4px); }
-.drafts figure:hover img, .drafts figure.on img { border-color: var(--text-primary); box-shadow: 0 14px 30px rgb(40 30 15 / .14); }
-.drafts img { width: 100%; height: auto; border-radius: 2px; border: 1px solid var(--border); background: #fff; padding: 6px; box-sizing: border-box; }
-.drafts figcaption { font-size: 14px; color: var(--text-secondary); margin-top: 8px; }
 .tag { display: inline-block; font: 10.5px/1.6 var(--sans); letter-spacing: .1em; text-transform: uppercase; padding: 0 6px; border: 1px solid var(--text-muted); border-radius: 2px; color: var(--text-muted); margin-right: 6px; }
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin: 12px 0; }
 .stat { background: transparent; border: 0; border-top: 1px solid var(--text-primary); border-radius: 0; padding: 12px 2px 0; }
@@ -119,14 +109,14 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
   <svg id="hero-bg" aria-hidden="true"></svg>
   <div class="hero-head">
     <div>
-      <p class="hero-kicker">The Evolution of LLM Value</p>
-      <h1>The same model quality costs far less than it did <em>two years ago.</em></h1>
+      <p class="hero-kicker">The Evolution of LLM Value · 453 models · prices and scores from 2026-03-31</p>
+      <h1 id="hero-h1"></h1>
     </div>
     <p class="hero-num"><span class="n" id="hero-ratio"></span><span class="d" id="hero-sub"></span></p>
   </div>
   <div class="hero-foot">
     <div>
-      <p class="hero-lede">We start with one comparison, widen it to the whole market, say what it means for someone choosing a model, and end with two tools to test it on your own task and budget.</p>
+      <p class="hero-lede">We compare language models by benchmark score and list price. Scroll to see how far the drop goes across the whole market, what it means for a monthly bill, and then test it on your own task and budget.</p>
       <a class="hero-scroll" href="#hook">Begin with one comparison ↓</a>
     </div>
     <p class="hero-cap" id="hero-cap"></p>
@@ -137,7 +127,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
  <div class="split">
  <div class="txt">
   <p class="step">1 · Hook</p>
-  <h2>The best model of 2024 against what you can buy now</h2>
+  <h2>The best model of 2024 and its later, cheaper matches</h2>
   <p class="big" id="hook-line"></p>
   <div class="controls card">
     <div class="grp"><span class="lab">Task</span><div class="seg" id="h-task"></div></div>
@@ -162,28 +152,61 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
  <div class="txt">
   <p class="step">2 · Rising insights</p>
   <h2>Is this one example, or the whole market?</h2>
-  <p class="big">Three views widen the hook. Drafts use the real data; the interactive versions are next.</p>
+  <p class="big">Three views widen the example, each with a different question: how the cost of a score changed over time, what each step up in score costs, and what the top model costs against the cheapest good-enough one.</p>
   <ol class="draft-index">
-    <li><a href="#d1" data-f="d1"><span>A</span>Price rises with score, but the spread inside a band is huge</a></li>
-    <li><a href="#d2" data-f="d2"><span>B</span>The cheapest good-enough model costs a fraction of the top one</a></li>
-    <li><a href="#d3" data-f="d3"><span>C</span>Cheap does not have to mean slow</a></li>
+    <li><a href="#c1" data-f="c1"><span>A</span>Has the cost of a given score fallen over the release years?</a></li>
+    <li><a href="#c2" data-f="c2"><span>B</span>What does each step up in score cost?</a></li>
+    <li><a href="#c3" data-f="c3"><span>C</span>How much does the top model cost next to the cheapest good-enough one?</a></li>
   </ol>
  </div>
- <div class="vis">
-  <div class="drafts">
-    <figure id="d1"><span class="fig-n">A</span><img src="img/draft-1-price-by-score-band.png" alt="Draft: price by score band"><figcaption><span class="tag">draft</span><b>Price by score band.</b> Median price rises with score: $0.40 below 20, $5.22 above 50. Inside one band the spread is large (40 to 45: 25 models, $0.15 to $35).</figcaption></figure>
-    <figure id="d2"><span class="fig-n">B</span><img src="img/draft-2-top-vs-cheapest.png" alt="Draft: top vs cheapest good-enough model"><figcaption><span class="tag">draft</span><b>Top vs cheapest good enough.</b> At 80% of the best score, the cheapest model costs 9% (general), 30% (coding) and 2% (math) of the top model's price.</figcaption></figure>
-    <figure id="d3"><span class="fig-n">C</span><img src="img/draft-3-speed-vs-price.png" alt="Draft: speed against price"><figcaption><span class="tag">draft</span><b>Speed vs price.</b> Of 17 good-enough general models with a speed value, 7 run at 100 tokens/s or more. The cheapest runs at 46.</figcaption></figure>
-  </div>
+ <div class="vis insight-cards">
+  <section class="card" id="c1"><span class="fig-n">A</span>
+    <div class="controls">
+      <div class="grp"><span class="lab">Task</span><div class="seg" id="i3-task"></div></div>
+      <label class="grow"><span class="lab">Good enough = at least <b id="i3-pct-val"></b> of the best score in that task</span><input id="i3-pct" type="range" min="30" max="100" step="1" value="80"></label>
+    </div>
+    <h2>Has the cost of a given score fallen over the release years?</h2>
+    <p class="hint">One line per release year. For any score on the x-axis, the line shows the price of the cheapest paid model from that year that scores at least that much. A line that stops means no model from that year scored higher. The dashed line is the good-enough score from the slider; the dots show what the cheapest model of each year costs there.</p>
+    <p class="big" style="font-size:15px;margin:2px 0 8px" id="i3-take"></p>
+    <div id="i3-chart"></div>
+    <p class="coverage" id="i3-cov"></p>
+    <p class="explain link"><strong>Link</strong> · hovering a dot shows that model's license, scores, price and speed. <strong>Filter</strong> · the task buttons and the slider recompute every dot.</p>
+  </section>
+
+  <section class="card" id="c2"><span class="fig-n">B</span>
+    <div class="controls">
+      <div class="grp"><span class="lab">Task</span><div class="seg" id="i-task"></div></div>
+      <div class="grp"><span class="lab">License</span><div class="seg" id="i-lic"></div></div>
+    </div>
+    <h2 id="i1-title"></h2>
+    <p class="hint" id="i1-hint"></p>
+    <p class="big" style="font-size:15px;margin:2px 0 8px" id="i1-take"></p>
+    <div id="i1-chart"></div>
+    <p class="hint" id="i1-detail" style="min-height:38px;margin-top:6px"></p>
+    <div class="legend"><span><i style="background:var(--open)"></i>open weights</span><span><i style="background:var(--prop)"></i>proprietary</span><span><i class="sq" style="background:var(--text-primary);height:3px;width:14px;border-radius:0;vertical-align:3px"></i>median price</span><span><i class="sq" style="background:var(--text-muted);opacity:.35"></i>middle half of the models</span></div>
+    <p class="coverage" id="i1-cov"></p>
+    <p class="explain link"><strong>Link</strong> · clicking a score band only highlights it and shows its range. <strong>Filter</strong> · the task and license buttons remove models and recompute every median.</p>
+  </section>
+  <section class="card" id="c3"><span class="fig-n">C</span>
+    <div class="controls">
+      <div class="grp"><span class="lab">Monthly usage (75% input / 25% output)</span><div class="seg" id="i2-usage"></div></div>
+      <label class="grow"><span class="lab">Good enough = at least <b id="i2-pct-val"></b> of the best score in that task</span><input id="i2-pct" type="range" min="50" max="100" step="1" value="80"></label>
+    </div>
+    <h2>How much does the top model cost next to the cheapest good-enough one?</h2>
+    <p class="hint">For each task: the paid model with the highest score, and the cheapest paid model that still reaches the good-enough share of that score. Each bar is a model's monthly bill, and all three tasks share the same dollar axis.</p>
+    <div id="i2-chart"></div>
+    <div class="legend"><span><i class="sq" style="background:var(--role-top)"></i>top-scoring model in the task</span><span><i class="sq" style="background:var(--role-cheap)"></i>cheapest model that still reaches the good-enough score</span></div>
+    <p class="coverage" id="i2-cov"></p>
+    <p class="explain link"><strong>Filter</strong> · the usage buttons and the slider recompute every bar. Hovering a bar shows the model's license, scores, price and speed (link, nothing removed).</p>
+  </section>
  </div>
  </div>
 </section>
-
 <section class="story" id="message">
  <div class="split">
  <div class="txt">
   <p class="step">3 · Main message</p>
-  <h2>Chasing the top score is rarely worth the price</h2>
+  <h2>Near-top scores can cost a fraction of the top price</h2>
   <p class="big" id="msg-line"></p>
   <p class="coverage" id="msg-cov"></p>
  </div>
@@ -196,10 +219,10 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <section class="story" id="explore">
   <p class="step">4 · Solution</p>
   <h2>Test it on your own task and budget</h2>
-  <p class="big">Two prototypes answer the same question: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? Design A starts from performance, Design B from budget.</p>
+  <p class="big">Two ways in to the same question: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? Explore by performance (Design A) starts from price-versus-score plots. Explore by budget (Design B) starts from your requirements.</p>
   <div class="tabs" role="tablist">
-    <button role="tab" id="tab-a" aria-selected="true"><b>Design A</b> · start from performance <span style="color:var(--text-muted)">(brush &amp; link)</span></button>
-    <button role="tab" id="tab-b" aria-selected="false"><b>Design B</b> · start from budget <span style="color:var(--text-muted)">(shared filters)</span></button>
+    <button role="tab" id="tab-a" aria-selected="true"><b>Explore by performance</b> <span style="color:var(--text-muted)">(Design A · brush &amp; link)</span></button>
+    <button role="tab" id="tab-b" aria-selected="false"><b>Explore by budget</b> <span style="color:var(--text-muted)">(Design B · shared filters)</span></button>
   </div>
   <div class="design" id="design-a">/*A*/</div>
   <div class="design" id="design-b" hidden>/*B*/</div>
@@ -207,7 +230,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 
 <footer id="about">
   <p><b>Data.</b> LLM Price-Performance Tracker (Kaggle), 453 model endpoints, scrape of 2026-03-31. The tracker reports only a release year, so time views group models by release year. 138 models have no price and 161 have no year; each view says what it leaves out. Nothing is imputed. Cleaning steps: <code>dashboards/data/cleaning_log.txt</code>.</p>
-  <p><b>Prices</b> are list prices. Reasoning models often emit more tokens, so real bills run higher.</p>
+  <p><b>Prices</b> are list prices from the 2026-03-31 snapshot and may have changed since. Reasoning models often emit more tokens, so real bills can run higher.</p>
 </footer>
 </main>
 <script>/*D3*/</script>
@@ -217,6 +240,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <script>/*APAGE*/</script>
 <script>/*BPAGE*/</script>
 <script>/*STORY*/</script>
+<script>/*INSIGHTS*/</script>
 <script>
 (function(){
   const show = (k) => { for (const x of ["a","b"]) { document.getElementById("design-"+x).hidden = x!==k; document.getElementById("tab-"+x).setAttribute("aria-selected", x===k); } };

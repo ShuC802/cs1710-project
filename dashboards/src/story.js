@@ -6,6 +6,13 @@
   const usd = (v) => C.fmtUSD(v);
   const bill = (v) => "$" + v.toFixed(2);
 
+  $("hero-h1").innerHTML = `Language models that match 2024's best now cost <em>up to ${H.ratio}× less.</em>`;
+  function hookLine() {
+    const t = C.taskOf(S.task), r = C.flagships(S.task, S.pct).find((q) => q.year === 2024);
+    if (!r || !r.flag || !r.cheapest) { $("hook-line").textContent = `No paid model released after 2024 is cheaper and scores at least ${S.pct}% of the best 2024 ${t.short} model.`; return; }
+    const f = r.flag, c = r.cheapest, k = f.price / c.price;
+    $("hook-line").innerHTML = `In the March 2026 snapshot, <b>${c.name}</b> scores ${c[S.task]} on ${t.short} at <b>${usd(c.price)}</b> per million tokens. The best paid 2024 model, <b>${f.name}</b>, scores ${f[S.task]} at <b>${usd(f.price)}</b>. That is <b>${k >= 10 ? k.toFixed(0) : k.toFixed(1)}× cheaper</b>${c[S.task] >= f[S.task] ? " for an equal or higher score" : ` for at least ${S.pct}% of its score`}.`;
+  }
   // hero: a poster made of the data. Every paid model with a general score is one thin stroke rising from the
   // baseline to its list price (log), placed in its release-year column. The ink line is the cheapest paid model
   // scoring at least the 2024 best model's score (a16z "LLMflation" style), drawn through the real dots.
@@ -126,11 +133,13 @@
       .tween("text", function () { return (t) => { this.textContent = `${Math.round(1 + (H.ratio - 1) * t)}×`; }; });
   })();
 
-  $("hook-line").innerHTML = `In 2024, <b>${H.old.name}</b> scored ${H.old.score} on the general index at <b>${usd(H.old.price)}</b> per million tokens. Today <b>${H.new.name}</b> scores ${H.new.score} at <b>${usd(H.new.price)}</b>: about <b>${H.ratio}× cheaper</b> for the same level or better.`;
 
   // controls
   const seg = $("h-task");
-  C.TASKS.forEach((t) => { const b = document.createElement("button"); b.textContent = t.label; b.dataset.k = t.key; b.onclick = () => { S.task = t.key; buildScatter(); render(); }; seg.appendChild(b); });
+  C.TASKS.forEach((t) => { const b = document.createElement("button"); b.textContent = t.label; b.dataset.k = t.key; b.onclick = () => setTask(t.key); seg.appendChild(b); });
+  // one task is shared by the hook and the Rising insights controls
+  function setTask(k) { if (S.task === k) return; S.task = k; buildScatter(); render(); window.dispatchEvent(new CustomEvent("taskchange", { detail: k })); }
+  window.addEventListener("taskchange", (e) => setTask(e.detail));
   $("h-pct").oninput = (e) => { S.pct = +e.target.value; render(); };
 
   const flags = C.flagChart({ root: $("h-flags"), w: 560, h: 400 }, { onSelect: (y) => { S.year = S.year === y ? null : y; render(); } });
@@ -146,6 +155,7 @@
     $("h-flag-title").textContent = `What each year's best model cost, and what matches it later · ${t.short}`;
     $("h-sc-title").textContent = `All models: price vs. score · ${t.short}`;
     $("h-flag-hint").textContent = "Each column is a release year. The black dot is that year's best paid model. The open circle is the cheapest model released later that still matches its score, and the line is the saving. Click a column to see these models in the chart below.";
+    hookLine();
     flags.update({ task: S.task, pct: S.pct, selectedYear: S.year });
     const r = row();
     const focus = r && r.flag ? new Set([r.flag.id, ...r.later.map((m) => m.id)]) : null;
@@ -157,17 +167,17 @@
   render();
 
   // main message
-  $("msg-line").innerHTML = `On the general index, a model that reaches 80% of the best score costs <b>${(M.price_ratio * 100).toFixed(0)}%</b> as much as the top model. At 100M tokens a month that is <b>${bill(M.cheap_bill)}</b> against <b>${bill(M.top_bill)}</b>.`;
+  $("msg-line").innerHTML = `On the general index, the cheapest paid model that reaches 80% of the best score (<b>${M.cheap_model}</b>) costs <b>${(M.price_ratio * 100).toFixed(0)}%</b> of the top model's price (<b>${M.top_model}</b>): <b>${bill(M.cheap_bill)}</b> against <b>${bill(M.top_bill)}</b> a month at 100M tokens.`;
   const T = STATS.tasks, sp = STATS.speed, sh = STATS.shu;
   const cards = [
-    [`${H.ratio}×`, `${H.old.name} (best of 2024) vs ${H.new.name} at a similar score`],
+    [`${H.ratio}×`, `${H.old.name} (best paid model of 2024, score ${H.old.score}) vs ${H.new.name} (score ${H.new.score})`],
     [`${Math.round(T.general.share_of_top_score * 100)}%`, `of the top general score, from ${T.general.cheapest_model}, at ${Math.round(T.general.price_ratio * 100)}% of the price`],
-    [`${Math.round(1 / T.math.price_ratio)}×`, `cheaper for math: ${T.math.cheapest_model} at ${Math.round(T.math.share_of_top_score * 100)}% of the best score`],
+    [`${Math.round(1 / T.math.price_ratio)}×`, `cheaper than the top math model: ${T.math.cheapest_model} reaches ${Math.round(T.math.share_of_top_score * 100)}% of the best math score`],
     [`${sp.n_fast} of ${sp.n_speed_known}`, `good-enough general models with known speed run at 100 tokens/s or more`],
   ];
   $("stats").innerHTML = cards.map(([n, d]) => `<div class="stat"><div class="n">${n}</div><div class="d">${d}</div></div>`).join("");
 
-  // page motion: entrance reveals, counting numbers, reading progress, current section in the nav, draft index + lightbox
+  // page motion: entrance reveals, counting numbers, reading progress, current section in the nav, insight index
   (function pageMotion() {
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const count = (el) => {
@@ -198,21 +208,12 @@
       if (e.isIntersecting) links.forEach((a) => a.toggleAttribute("aria-current", a.getAttribute("href") === "#" + e.target.id));
     }), { rootMargin: "-45% 0px -50% 0px" });
     ["hero", "hook", "insights", "message", "explore", "about"].forEach((id) => navIo.observe($(id)));
-    // drafts: an index row and its figure light up together; a figure opens large on click
+    // insights: an index row and its chart card light up together; click scrolls to the card
     document.querySelectorAll(".draft-index a").forEach((a) => {
       const f = $(a.dataset.f), on = (v) => { a.classList.toggle("on", v); f.classList.toggle("on", v); };
       for (const el of [a, f]) { el.addEventListener("mouseenter", () => on(true)); el.addEventListener("mouseleave", () => on(false)); }
       a.onclick = (ev) => { ev.preventDefault(); f.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); };
     });
-    const lb = document.createElement("div");
-    lb.id = "lightbox";
-    document.body.appendChild(lb);
-    document.querySelectorAll(".drafts figure").forEach((f) => (f.onclick = () => {
-      lb.innerHTML = `<figure>${f.querySelector("img").outerHTML}${f.querySelector("figcaption").outerHTML}</figure>`;
-      lb.classList.add("on");
-    }));
-    lb.onclick = () => lb.classList.remove("on");
-    addEventListener("keydown", (e) => { if (e.key === "Escape") lb.classList.remove("on"); });
   })();
-  $("msg-cov").textContent = `Based on ${cov.n_general_paid} paid models with a general score (${cov.n_coding_paid} for coding, ${cov.n_math_paid} for math). ${cov.n_no_price} of ${cov.n_models} models have no price and ${cov.n_free} are free; neither group is counted in price ratios. Only 6 models score above 50, so the top end is thin. List prices only.`;
+  $("msg-cov").textContent = `Based on ${cov.n_general_paid} paid models with a general score (${cov.n_coding_paid} for coding, ${cov.n_math_paid} for math). ${cov.n_no_price} of ${cov.n_models} models have no price and ${cov.n_free} are free; neither group is counted in price ratios. Only 6 models score above 50, so the top end is thin. List prices only; reasoning models often use more tokens, so real bills can be higher.`;
 })();

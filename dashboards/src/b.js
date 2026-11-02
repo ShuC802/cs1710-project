@@ -43,8 +43,11 @@
     if (!m) { el.innerHTML = "Click a bar or a dot to pin a model here."; return; }
     const sc = C.TASKS.map((t) => `<tr><th>${t.index}</th><td class="v">${m[t.key] == null ? "no score" : m[t.key]}</td></tr>`).join("");
     const costs = C.USAGE.map((u) => `<tr><th>${u.label} · ${C.fmtTok(u.tokens)} tok/mo</th><td class="v">${m.price == null ? "no price" : m.free ? "$0 list (you host)" : C.fmtUSD(C.bill(m, u.tokens).total)}</td></tr>`).join("");
+    const why = { score: `its ${C.taskOf(S.task).short} score is below the good-enough line or missing`, license: "the license filter", budget: "the monthly budget", speed: "the minimum speed (or its speed is unknown)" };
+    const f = m.price == null ? "price" : fails(m);
+    const note = f ? `<p class="hint" style="margin:4px 0 6px"><b>Excluded by current controls:</b> ${f === "price" ? "it has no listed price, so the price views leave it out" : why[f]}. It stays pinned from earlier.</p>` : "";
     el.innerHTML = `<b style="color:var(--text-primary)">${m.name}</b> · ${m.provider} · ${m.open ? "open weights" : "proprietary"} · ${m.year ?? "year unknown"}
-      <table>${sc}<tr><th>Speed</th><td class="v">${m.speed == null ? "unknown" : m.speed + " tok/s"}</td></tr>${costs}</table>`;
+      ${note}<table>${sc}<tr><th>Speed</th><td class="v">${m.speed == null ? "unknown" : m.speed + " tok/s"}</td></tr>${costs}</table>`;
   }
 
   function draw() {

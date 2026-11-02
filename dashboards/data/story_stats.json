@@ -55,13 +55,13 @@
    "best_score": 57.2,
    "threshold": 45.8,
    "n_pass": 19,
-   "top_model": "GPT-5.4 (xhigh)",
-   "top_price": 5.625,
+   "top_model": "Gemini 3.1 Pro Preview",
+   "top_price": 4.5,
    "cheapest_model": "MiniMax-M2.7",
    "cheapest_score": 49.6,
    "cheapest_price": 0.525,
    "share_of_top_score": 0.867,
-   "price_ratio": 0.093
+   "price_ratio": 0.117
   },
   "coding": {
    "best_score": 57.3,
@@ -107,12 +107,12 @@
  },
  "main": {
   "tokens_per_month": 100000000.0,
-  "top_model": "GPT-5.4 (xhigh)",
-  "top_bill": 562.5,
+  "top_model": "Gemini 3.1 Pro Preview",
+  "top_bill": 450.0,
   "cheap_model": "MiniMax-M2.7",
   "cheap_bill": 52.5,
   "share_of_top_score": 0.867,
-  "price_ratio": 0.093
+  "price_ratio": 0.117
  },
  "shu": {
   "band_40_45": {
