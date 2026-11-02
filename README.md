@@ -28,4 +28,4 @@ To redraw the three draft images: `python3 dashboards/make_drafts.py` (needs mat
 - Filter = remove and recompute. Link = highlight only. Each view says which it does.
 
 ## Status
-Functional: hook view (dumbbell + scatter), Explore by performance (Design A), Explore by budget (Design B). All numbers are from the 2026-03-31 snapshot. See CHANGELOG.md. Drafts only (static images in `docs/img/`): price by score band, top vs cheapest good-enough model, speed vs price.
+Functional: hook view (dumbbell + scatter), three Rising insights (cost of a score by release year, price by score band, top vs cheapest good-enough model), Explore by performance (Design A), Explore by budget (Design B). All numbers are from the 2026-03-31 snapshot. See CHANGELOG.md.

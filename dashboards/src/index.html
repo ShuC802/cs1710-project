@@ -66,8 +66,21 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
 <section class="story" id="insights">
   <p class="step">2 · Rising insights</p>
   <h2>Is this one example, or the whole market?</h2>
-  <p class="big">Three views widen the example. The first two are interactive. The third is still a draft.</p>
+  <p class="big">Three views widen the example, each with a different question: how the cost of a score changed over time, what each step up in score costs, and what the top model costs against the cheapest good-enough one.</p>
   <section class="card">
+    <div class="controls">
+      <div class="grp"><span class="lab">Task</span><div class="seg" id="i3-task"></div></div>
+      <label class="grow"><span class="lab">Good enough = at least <b id="i3-pct-val"></b> of the best score in that task</span><input id="i3-pct" type="range" min="30" max="100" step="1" value="80"></label>
+    </div>
+    <h2>Has the cost of a given score fallen over the release years?</h2>
+    <p class="hint">One line per release year. For any score on the x-axis, the line shows the price of the cheapest paid model from that year that scores at least that much. A line that stops means no model from that year scored higher. The dashed line is the good-enough score from the slider; the dots show what the cheapest model of each year costs there.</p>
+    <p class="big" style="font-size:15px;margin:2px 0 8px" id="i3-take"></p>
+    <div id="i3-chart"></div>
+    <p class="coverage" id="i3-cov"></p>
+    <p class="explain link"><strong>Link</strong> · hovering a dot shows that model's license, scores, price and speed. <strong>Filter</strong> · the task buttons and the slider recompute every dot.</p>
+  </section>
+
+  <section class="card" style="margin-top:14px">
     <div class="controls">
       <div class="grp"><span class="lab">Task</span><div class="seg" id="i-task"></div></div>
       <div class="grp"><span class="lab">License</span><div class="seg" id="i-lic"></div></div>
@@ -86,16 +99,13 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
       <div class="grp"><span class="lab">Monthly usage (75% input / 25% output)</span><div class="seg" id="i2-usage"></div></div>
       <label class="grow"><span class="lab">Good enough = at least <b id="i2-pct-val"></b> of the best score in that task</span><input id="i2-pct" type="range" min="50" max="100" step="1" value="80"></label>
     </div>
-    <h2>Top-scoring model vs cheapest good-enough model</h2>
+    <h2>How much does the top model cost next to the cheapest good-enough one?</h2>
     <p class="hint">For each task: the paid model with the highest score, and the cheapest paid model that still reaches the good-enough share of that score. Each bar is a model's monthly bill, and all three tasks share the same dollar axis.</p>
     <div id="i2-chart"></div>
     <div class="legend"><span><i class="sq" style="background:var(--role-top)"></i>top-scoring model in the task</span><span><i class="sq" style="background:var(--role-cheap)"></i>cheapest model that still reaches the good-enough score</span></div>
     <p class="coverage" id="i2-cov"></p>
     <p class="explain link"><strong>Filter</strong> · the usage buttons and the slider recompute every bar. Hovering a bar shows the model's license, scores, price and speed (link, nothing removed).</p>
   </section>
-  <div class="drafts two" style="margin-top:14px">
-    <figure><img src="img/draft-3-speed-vs-price.png" alt="Draft: speed against price"><figcaption><span class="tag">draft</span><b>Speed vs price.</b> Of 17 good-enough general models with a speed value, 7 run at 100 tokens/s or more. The cheapest runs at 46.</figcaption></figure>
-  </div>
 </section>
 
 <section class="story" id="message">

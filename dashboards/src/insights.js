@@ -47,7 +47,7 @@
     const x = d3.scaleBand().domain(bands.map((b) => b.i)).range([0, iw]).paddingInner(0.12);
     const bw = x.bandwidth();
 
-    $("i1-title").textContent = `Price by score band · ${t.short}`;
+    $("i1-title").textContent = `What does each step up in score cost? · ${t.short}`;
     $("i1-hint").textContent = "Each dot is one paid model. Models are grouped by score. The black bar is the group's median price and the shaded block covers the middle half of its models. Click a band for its cheapest and most expensive model.";
 
     // takeaway: only statements the numbers support
@@ -157,6 +157,100 @@
 
     const missing = C.TASKS.map((t) => `${t.short}: ${C.models.filter((d) => d[t.key] != null && d.price == null).length} scored but unpriced`).join("; ");
     $("i2-cov").textContent = `Only models with a score and a list price above $0 are compared (${missing}). Free models are left out because a $0 list price is not a $0 bill. Bills use list prices; reasoning models often use more tokens.`;
+  }
+  draw();
+})();
+
+/* Rising insight 3: what the cheapest paid model costs to reach a score, one curve per release year.
+   For each score x, a year's curve is the lowest price among that year's models that score at least x.
+   A curve that stops early means no model from that year scored higher. The good-enough slider adds a
+   vertical line; the dots on it are the cheapest model of each year at that score. */
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const S = { task: "general", pct: 80 };
+  const YEARS = C.COHORTS;                                  // 2024, 2025, 2026 (2023 has 1 model)
+  const STYLE = { 2024: { w: 2.6, col: "var(--yr24)", dash: "6 4" }, 2025: { w: 2.8, col: "var(--yr25)", dash: null }, 2026: { w: 3.4, col: "var(--yr26)", dash: null } };
+  const usd = (v) => "$" + (v >= 1 ? v.toFixed(2) : String(+v.toPrecision(3)));
+
+  C.TASKS.forEach((t) => { const b = document.createElement("button"); b.textContent = t.label; b.dataset.k = t.key; b.onclick = () => setTask(t.key, true); $("i3-task").appendChild(b); });
+  function setTask(k, announce) { if (S.task === k) return; S.task = k; draw(); if (announce) window.dispatchEvent(new CustomEvent("taskchange", { detail: k })); }
+  window.addEventListener("taskchange", (e) => setTask(e.detail, false));
+  $("i3-pct").oninput = (e) => { S.pct = +e.target.value; draw(); };
+
+  const W = 780, H = 400, m = { t: 20, r: 70, b: 50, l: 58 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const svg = d3.select($("i3-chart")).append("svg").attr("viewBox", `0 0 ${W} ${H}`);
+  const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`);
+
+  // step curve: (0,c1) (s1,c1) (s1,c2) (s2,c2) ... (sk,ck)
+  function curve(ms, task) {
+    const sorted = ms.slice().sort((a, b) => a[task] - b[task]);
+    const pts = []; let prev = 0;
+    sorted.forEach((d, i) => {
+      if (i && d[task] === sorted[i - 1][task]) return;
+      const c = d3.min(sorted.filter((q) => q[task] >= d[task]), (q) => q.price);
+      pts.push([prev, c], [d[task], c]); prev = d[task];
+    });
+    // vertical jumps: each step starts at the previous score with the new cheapest price
+    return pts;
+  }
+
+  function draw() {
+    const task = S.task, t = C.taskOf(task), thr = C.thr(task, S.pct), best = C.best(task);
+    $("i3-task").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.k === task));
+    $("i3-pct-val").textContent = S.pct + "%";
+    const priced = C.models.filter((d) => d[task] != null && d.price > 0);
+    const pool = priced.filter((d) => YEARS.includes(d.year));
+    const per = YEARS.map((yr) => {
+      const ms = pool.filter((d) => d.year === yr);
+      const ok = ms.filter((d) => d[task] >= thr).sort((a, b) => a.price - b.price || b[task] - a[task]);
+      return { yr, ms, total: ms.length, n: ok.length, d: ok[0] || null, maxScore: d3.max(ms, (d) => d[task]) };
+    });
+    const have = per.filter((p) => p.d);
+
+    let take = `Score at least <b>${thr.toFixed(1)}</b> on ${t.short}: `;
+    if (have.length >= 2) {
+      const a = have[0], b = have[have.length - 1], k = a.d.price / b.d.price;
+      take += `the cheapest paid model costs <b>${usd(a.d.price)}</b> for ${a.yr} releases and <b>${usd(b.d.price)}</b> for ${b.yr} releases` + (k >= 1.05 ? `, <b>${k >= 10 ? Math.round(k) : k.toFixed(1)}× less</b>.` : k <= 0.95 ? `, <b>${(1 / k) >= 10 ? Math.round(1 / k) : (1 / k).toFixed(1)}× more</b>.` : ", about the same.");
+      const none = per.filter((p) => !p.d);
+      if (none.length) take += ` No ${none.map((p) => p.yr).join(" or ")} release scores this high.`;
+    } else if (have.length === 1) take += `only ${have[0].yr} releases reach it, the cheapest at <b>${usd(have[0].d.price)}</b>.`;
+    else take += "no paid model reaches it.";
+    $("i3-take").innerHTML = take;
+
+    g.selectAll("*").remove();
+    const x = d3.scaleLinear().domain([0, best * 1.03]).range([0, iw]);
+    const y = d3.scaleLog().domain([d3.min(priced, (d) => d.price) / 1.3, 60]).range([ih, 0]);
+    const yt = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50].filter((v) => v >= y.domain()[0] && v <= y.domain()[1]);
+    g.append("g").attr("class", "grid").call(d3.axisLeft(y).tickValues(yt).tickSize(-iw).tickFormat(""));
+    g.append("g").attr("class", "axis").call(d3.axisLeft(y).tickValues(yt).tickFormat((v) => "$" + v).tickSizeOuter(0));
+    g.append("g").attr("class", "axis").attr("transform", `translate(0,${ih})`).call(d3.axisBottom(x).ticks(6).tickSizeOuter(0));
+    g.append("text").attr("class", "title-lab").attr("transform", "rotate(-90)").attr("x", -ih / 2).attr("y", -44).attr("text-anchor", "middle").text("cheapest price per 1M tokens (log scale)");
+    g.append("text").attr("class", "title-lab").attr("x", iw / 2).attr("y", ih + 40).attr("text-anchor", "middle").text(`${t.index} score the model has to reach →`);
+
+    // good-enough line
+    g.append("line").attr("x1", x(thr)).attr("x2", x(thr)).attr("y1", 0).attr("y2", ih).attr("stroke", "var(--thr)").attr("stroke-dasharray", "5 4").attr("stroke-width", 1.3);
+    g.append("text").attr("class", "halo").attr("x", x(thr) + (x(thr) > iw - 150 ? -6 : 6)).attr("y", 10).attr("text-anchor", x(thr) > iw - 150 ? "end" : "start").style("fill", "var(--text-primary)").text(`good enough ≥ ${thr.toFixed(1)}`);
+
+    // one step curve per year, labelled at its end
+    per.forEach((p) => {
+      if (!p.ms.length) return;
+      const st = STYLE[p.yr], pts = curve(p.ms, task);
+      const line = d3.line().x((q) => x(q[0])).y((q) => y(q[1]));
+      g.append("path").attr("d", line(pts)).attr("fill", "none").attr("stroke", st.col).attr("stroke-width", st.w).attr("stroke-dasharray", st.dash);
+      const end = pts[pts.length - 1];
+      g.append("text").attr("class", "halo").attr("x", x(end[0]) + 6).attr("y", y(end[1])).attr("dy", "0.33em").style("fill", STYLE[p.yr].col).style("font-weight", 700).text(p.yr);
+    });
+    // the cheapest model of each year at the good-enough score
+    have.forEach((p) => {
+      g.append("circle").attr("cx", x(thr)).attr("cy", y(p.d.price)).attr("r", 5.5).attr("fill", STYLE[p.yr].col).attr("stroke", "var(--surface-1)").attr("stroke-width", 1.5)
+        .on("mouseenter", (ev) => C.tip.show(p.d, ev, 0, task)).on("mousemove", (ev) => C.tip.move(ev)).on("mouseleave", () => C.tip.hide());
+      const flip = x(thr) > iw - 90;
+      g.append("text").attr("class", "halo").attr("x", x(thr) + (flip ? -9 : 9)).attr("y", y(p.d.price) - 9).attr("text-anchor", flip ? "end" : "start").style("fill", "var(--text-primary)").style("font-weight", 600).text(usd(p.d.price));
+    });
+
+    const noYear = priced.filter((d) => !d.year).length;
+    $("i3-cov").textContent = `${pool.length} of ${priced.length} paid models with a ${t.index} have a release year in 2024 to 2026 (${per.map((p) => `${p.yr}: ${p.total}`).join(", ")}); ${noYear} have no year and cannot be placed. 2026 has the most models, so it has more chances to contain a cheap one. Free models are left out.`;
   }
   draw();
 })();
