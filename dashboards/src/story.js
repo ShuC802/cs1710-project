@@ -6,7 +6,7 @@
   const usd = (v) => C.fmtUSD(v);
   const bill = (v) => "$" + v.toFixed(2);
 
-  $("hero-h1").textContent = `In the March 2026 snapshot, a model that scores higher than 2024's best costs ${usd(H.new.price)} per million tokens instead of ${usd(H.old.price)}.`;
+  $("hero-h1").textContent = `Language models that match 2024's best now cost up to ${H.ratio}× less`;
   function hookLine() {
     const t = C.taskOf(S.task), r = C.flagships(S.task, S.pct).find((q) => q.year === 2024);
     if (!r || !r.flag || !r.cheapest) { $("hook-line").textContent = `No paid model released after 2024 is cheaper and scores at least ${S.pct}% of the best 2024 ${t.short} model.`; return; }
@@ -16,7 +16,10 @@
 
   // controls
   const seg = $("h-task");
-  C.TASKS.forEach((t) => { const b = document.createElement("button"); b.textContent = t.label; b.dataset.k = t.key; b.onclick = () => { S.task = t.key; buildScatter(); render(); }; seg.appendChild(b); });
+  C.TASKS.forEach((t) => { const b = document.createElement("button"); b.textContent = t.label; b.dataset.k = t.key; b.onclick = () => setTask(t.key); seg.appendChild(b); });
+  // one task is shared by the hook and the Rising insights controls
+  function setTask(k) { if (S.task === k) return; S.task = k; buildScatter(); render(); window.dispatchEvent(new CustomEvent("taskchange", { detail: k })); }
+  window.addEventListener("taskchange", (e) => setTask(e.detail));
   $("h-pct").oninput = (e) => { S.pct = +e.target.value; render(); };
 
   const flags = C.flagChart({ root: $("h-flags"), w: 560, h: 400 }, { onSelect: (y) => { S.year = S.year === y ? null : y; render(); } });

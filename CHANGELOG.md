@@ -13,4 +13,16 @@ Rule we follow: the page states only what the data shows. A striking real number
 | 6 | Design A and B read as competing prototypes. | Named as two ways in: "Explore by performance (Design A)" and "Explore by budget (Design B)". Merging them into one tool is left for later. |
 | 7 | Main-message cards were vague ("similar score"). | Cards give both scores and the models' names. |
 
-Not done yet: interactive "Rising insights" charts, keyboard access for chart marks, merging A and B.
+## Round 2
+| # | Problem | Change |
+|---|---|---|
+| 8 | The page title was hard to parse and did not say what the page does. | New title: "Language models that match 2024's best now cost up to 273x less", with a one-line eyebrow (453 models, data from 2026-03-31) and a short subtitle. The 273x comes from story_stats.json. |
+| 9 | Rising insight 1 was a static draft image. | Now an interactive chart: price by score band. Task and license buttons filter and recompute medians; clicking a band shows its cheapest and most expensive model (link). The task is shared with the hook. The takeaway sentence is computed from the data. |
+
+| 10 | The "4375x gap" in Draft 1 came from one model (o1-pro, $262.50 blended). | Checked: it is real (OpenAI API, 2025-03-20, $150 in / $600 out per 1M tokens; the dataset lists it as 2024). It is the only model above $100 and has no usage data in the file. The sentence now uses the middle half of each band, so one extreme model cannot drive it. The extremes still show when a band is clicked. |
+| 11 | Rising insight 2 (top vs cheapest good-enough) is now interactive: usage buttons and a good-enough slider recompute all three tasks. | Colours are the ones used everywhere else on the page: dot = license (blue open, orange proprietary), dark/light bar = input/output cost. The earlier draft used blue for "cheapest", which clashed with open-weight blue, and grey for "top", which read as a judgment. Role is shown by label and position only. |
+| 12 | Two models tie for the top general score (57.2): GPT-5.4 (xhigh) at $5.63 and Gemini 3.1 Pro Preview at $4.50. The pipeline took the first, the new chart took the cheaper, so the page showed two sets of numbers. | prep_data.py now takes the cheaper model when scores tie. Main message is now $52.50 vs $450.00 a month, 12% of the price (was 9% of $562.50). Coding and math have no tie. |
+
+| 13 | Insight 2 was confusing: a blue/orange license legend clashed with the rest of the page, each model had a split input/output bar, and the cheapest math bar was very short. | Role is the colour: violet = top-scoring model, aqua = cheapest model that is good enough (palette slots 7 and 3, checked with the palette validator in light and dark; no blue/orange here), with a legend. One bar per model, one dollar axis shared by all tasks, the bill written at the end of each bar. A zoom window was tried and removed. License is in the hover tooltip. |
+
+Not done yet: interactive draft 3, keyboard access for chart marks, merging Design A and B.

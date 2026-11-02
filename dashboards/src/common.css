@@ -15,6 +15,8 @@
   --thr: #0b0b0b;
   --ring: #0b0b0b;
   --hl-bg: #eef3fb;
+  --role-top: #6250d6;   /* insight 2: top-scoring model (palette slot 7) */
+  --role-cheap: #1baf7a; /* insight 2: cheapest good-enough model (palette slot 3) */
 }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
@@ -23,6 +25,7 @@
     --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #96958c;
     --open: #3987e5; --prop: #d95926; --seg-in: #c3c2b7; --seg-out: #5d5c56;
     --accent: #86b6ef; --thr: #f0efec; --ring: #f0efec; --hl-bg: #22262d;
+    --role-top: #9085e9; --role-cheap: #199e70;
   }
 }
 :root[data-theme="dark"] {
@@ -31,6 +34,7 @@
   --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #96958c;
   --open: #3987e5; --prop: #d95926; --seg-in: #c3c2b7; --seg-out: #5d5c56;
   --accent: #86b6ef; --thr: #f0efec; --ring: #f0efec; --hl-bg: #22262d;
+  --role-top: #9085e9; --role-cheap: #199e70;
 }
 
 * { box-sizing: border-box; }
