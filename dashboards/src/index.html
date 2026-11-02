@@ -2,50 +2,130 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Evolution of LLM Value</title>
 <style>/*CSS*/
-html { scroll-behavior: smooth; scroll-padding-top: 52px; }
-nav.top { position: sticky; top: 0; z-index: 5; background: var(--surface-0); border-bottom: 1px solid var(--border); margin: 0 -16px; padding: 10px 16px; gap: 20px; flex-wrap: wrap; }
-nav.top b { margin-right: auto; }
+html { scroll-behavior: smooth; scroll-padding-top: 60px; }
+.hero { min-height: calc(100vh - 52px); box-sizing: border-box; display: flex; flex-direction: column; }
+section.story { padding: 120px 0 40px; }
+/* split: the words stay pinned on the left while the evidence scrolls past on the right */
+.split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 8fr); gap: 56px; align-items: start; }
+.split > .txt { position: sticky; top: 84px; }
+.split > .txt .controls { margin-top: 18px; }
+.split > .vis { display: grid; gap: 28px; }
+#hook .layoutB { grid-template-columns: 1fr; gap: 28px; }
+#progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 100%; background: var(--emph); transform-origin: 0 50%; transform: scaleX(0); }
+nav.top a[aria-current] { color: var(--text-primary); text-decoration: underline; text-decoration-color: var(--emph); text-underline-offset: 6px; text-decoration-thickness: 1.5px; }
+.draft-index { list-style: none; padding: 0; margin: 22px 0 0; border-top: 1px solid var(--text-primary); }
+.draft-index a { display: grid; grid-template-columns: 34px 1fr; padding: 12px 0; border-bottom: 1px solid var(--border); color: var(--text-secondary); text-decoration: none; font-size: 16px; line-height: 1.35; transition: color .2s, padding .2s; }
+.draft-index a span { color: var(--emph); font-style: italic; font-size: 20px; line-height: 1; }
+.draft-index a:hover, .draft-index a.on { color: var(--text-primary); padding-left: 6px; }
+.insight-cards { display: grid; gap: 40px; }
+.insight-cards > .card { position: relative; transition: transform .35s cubic-bezier(.2,.7,.2,1), border-color .35s, box-shadow .35s; }
+.insight-cards > .card.on { transform: translateY(-4px); border-color: var(--text-primary); box-shadow: 0 14px 30px rgb(40 30 15 / .12); }
+.fig-n { position: absolute; left: -14px; top: -18px; font-size: 44px; font-style: italic; line-height: 1; color: var(--emph); }
+#message .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 32px; margin: 0; }
+#message .stat .n { font-size: clamp(56px, 6.4vw, 96px); }
+/* entrance: hidden only when JS is running and motion is welcome */
+.js-rv .rv { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+.js-rv .rv.in { opacity: 1; transform: none; }
+@media (max-width: 980px) { .split { grid-template-columns: 1fr; gap: 24px; } .split > .txt { position: static; } }
+@media (max-width: 760px) { html nav.top { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; gap: 18px; scrollbar-width: none; } nav.top b { display: none; } }
+@media (prefers-reduced-motion: reduce) { .js-rv .rv { opacity: 1; transform: none; transition: none; } }
+nav.top { position: sticky; top: 0; z-index: 5; background: var(--surface-0); border-bottom: 1px solid var(--text-primary); margin: 0 -16px; padding: 12px 16px 10px; gap: 22px; flex-wrap: wrap; font-size: 15px; }
+nav.top b { margin-right: auto; font-weight: 400; letter-spacing: .14em; text-transform: uppercase; font-size: 13px; }
 nav.top a { text-decoration: none; color: var(--text-secondary); }
-nav.top a:hover { color: var(--accent); }
-.hero { padding: 26px 0 8px; }
-.hero h1 { font-size: 30px; line-height: 1.15; margin: 4px 0 8px; max-width: 860px; }
-.hero p { max-width: 760px; color: var(--text-secondary); font-size: 15px; }
-section.story { margin-top: 38px; }
-.step { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin: 0; }
-section.story > h2 { font-size: 22px; margin: 2px 0 6px; }
-.big { font-size: 17px; max-width: 860px; margin: 4px 0 12px; }
-.big b { color: var(--accent); }
-.drafts { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
-.drafts figure { margin: 0; }
-.drafts img { width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--border); background: #fff; }
-.drafts figcaption { font-size: 12.5px; color: var(--text-secondary); margin-top: 6px; }
-.tag { display: inline-block; font-size: 11px; padding: 1px 7px; border: 1px dashed var(--text-muted); border-radius: 10px; color: var(--text-muted); margin-right: 6px; }
-.drafts.two { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+nav.top a:hover { color: var(--emph); }
+/* Hero: a poster drawn from the data (story.js heroBg). Its own paper palette, light and dark. */
+.hero { --paper: var(--surface-0); --ink: var(--text-primary); --ink-2: var(--text-secondary); --ink-3: var(--text-muted); --h-open: var(--open); --h-prop: var(--prop); --verm: var(--emph); --blend: multiply; }
+@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .hero { --blend: screen; } }
+:root[data-theme="dark"] .hero { --blend: screen; }
+body { overflow-x: clip; }
+.hero { position: relative; isolation: isolate; overflow: hidden; margin-inline: calc(50% - 50vw); padding: 56px max(16px, calc(50vw - 604px)) 28px;
+  justify-content: space-between !important; background: var(--paper); color: var(--ink); font-family: var(--serif); }
+#hero-bg { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; }
+.hero-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 32px; }
+.hero-kicker { font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 14px; }
+.hero h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(36px, 4.6vw, 64px); line-height: 1.02; letter-spacing: -0.015em; margin: 0; max-width: 10em; color: var(--ink); }
+.hero h1 em { font-style: italic; color: var(--verm); }
+.hero-num { text-align: right; margin: 6px 0 0; }
+.hero-num .n { display: block; font-size: clamp(72px, 10vw, 156px); line-height: .82; letter-spacing: -0.04em; color: var(--verm); font-variant-numeric: lining-nums; }
+.hero-num .d { display: block; margin-top: 12px; font-size: 15px; font-style: italic; line-height: 1.45; color: var(--ink-2); }
+.hero-num .d b { font-style: normal; font-weight: 600; color: var(--ink); }
+.hero-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
+.hero-lede { max-width: 470px; font-size: 16px; line-height: 1.5; color: var(--ink-2); margin: 0 0 10px; }
+.hero-scroll { font-style: italic; font-size: 16px; color: var(--ink); text-decoration: underline; text-decoration-color: var(--verm); text-underline-offset: 5px; text-decoration-thickness: 1.5px; }
+.hero-scroll:hover { color: var(--verm); }
+.hero-cap { max-width: 440px; margin: 0; font-size: 12.5px; font-style: italic; line-height: 1.5; color: var(--ink-3); text-align: right; }
+#hero-bg text { font-family: var(--serif); }
+#hero-bg .h-rule line { stroke: var(--ink-3); stroke-opacity: .28; stroke-dasharray: 1 5; }
+#hero-bg .h-rule text { fill: var(--ink-3); font-size: 12px; font-style: italic; }
+#hero-bg .h-strokes { mix-blend-mode: var(--blend); }
+#hero-bg .h-strokes line { stroke-width: 1.1; stroke-linecap: round; opacity: .3; }
+#hero-bg .h-strokes line.hit { stroke-width: 2; opacity: .85; }
+#hero-bg .h-strokes .open { stroke: var(--h-open); fill: var(--h-open); }
+#hero-bg .h-strokes .prop { stroke: var(--h-prop); fill: var(--h-prop); }
+#hero-bg .h-base { stroke: var(--ink); stroke-width: 1.2; }
+#hero-bg .h-year text { fill: var(--ink-2); font-size: 15px; font-style: italic; }
+#hero-bg .h-ink path { fill: none; stroke: var(--ink); stroke-linecap: round; stroke-linejoin: round; }
+#hero-bg .h-ink .thick { stroke-width: 3.2; }
+#hero-bg .h-ink .thin { stroke-width: 1.1; opacity: .55; }
+#hero-bg .h-art { opacity: .36; }
+#hero-bg .h-note circle { fill: var(--paper); stroke: var(--verm); stroke-width: 2; }
+#hero-bg .h-note .flag circle { fill: var(--ink); stroke: var(--paper); stroke-width: 2; }
+#hero-bg .h-note .stem { stroke: var(--ink); stroke-width: 1.6; opacity: .7; }
+#hero-bg .h-note text { fill: var(--ink-2); font-size: 14px; paint-order: stroke; stroke: var(--paper); stroke-width: 5px; stroke-linejoin: round; }
+#hero-bg .h-note .k { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; fill: var(--verm); }
+#hero-bg .h-note .nm { font-size: 15px; fill: var(--ink); }
+#hero-bg .h-note .sub { font-style: italic; }
+#hero-bg .h-probe line { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; }
+#hero-bg .h-probe circle { fill: var(--verm); stroke: var(--paper); stroke-width: 2.5; }
+.hero-cap b { font-weight: 400; color: var(--ink-2); }
+@media (hover: hover) and (min-width: 761px) { .hero { cursor: crosshair; } .hero a { cursor: pointer; } }
+@media (max-width: 760px) { #hero-bg .h-note { opacity: .4; } .hero-head { grid-template-columns: 1fr; gap: 18px; } .hero-num { text-align: left; } .hero-cap { text-align: left; } }
+section.story { margin-top: 0; padding: 24px 0; }
+.step { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--emph); margin: 0 0 6px; }
+section.story > h2, .split > .txt > h2 { font-size: clamp(28px, 3.4vw, 42px); line-height: 1.08; letter-spacing: -0.015em; margin: 0 0 10px; max-width: 22em; }
+.big { font-size: 19px; line-height: 1.5; max-width: 820px; margin: 4px 0 16px; color: var(--text-secondary); }
+.big b { color: var(--text-primary); font-weight: 600; }
+.tag { display: inline-block; font: 10.5px/1.6 var(--sans); letter-spacing: .1em; text-transform: uppercase; padding: 0 6px; border: 1px solid var(--text-muted); border-radius: 2px; color: var(--text-muted); margin-right: 6px; }
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin: 12px 0; }
-.stat { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
-.stat .n { font-size: 28px; font-weight: 700; color: var(--accent); line-height: 1.1; }
-.stat .d { font-size: 12.5px; color: var(--text-secondary); margin-top: 4px; }
-@media (max-width: 980px) { .drafts, .stats { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 620px) { .drafts, .stats { grid-template-columns: 1fr; } }
+.stat { background: transparent; border: 0; border-top: 1px solid var(--text-primary); border-radius: 0; padding: 12px 2px 0; }
+.stat .n { font-size: clamp(40px, 4.6vw, 60px); font-weight: 400; color: var(--emph); line-height: 1; letter-spacing: -0.03em; }
+.stat .d { font-size: 14px; font-style: italic; color: var(--text-secondary); margin-top: 8px; }
+@media (max-width: 980px) { .stats { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 620px) { .stats, #message .stats { grid-template-columns: 1fr; } }
 .tabs { display: flex; gap: 8px; margin: 10px 0 4px; flex-wrap: wrap; }
-.tabs button { font: inherit; padding: 8px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1); color: var(--text-secondary); cursor: pointer; }
+.tabs { gap: 28px !important; border-bottom: 1px solid var(--border); }
+.tabs button { font: inherit; font-size: 16px; padding: 8px 0 10px; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; color: var(--text-secondary); cursor: pointer; }
 .tabs button b { color: var(--text-primary); }
-.tabs button[aria-selected=true] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.tabs button[aria-selected=true] b { color: var(--accent); }
+.tabs button[aria-selected=true] { border-bottom-color: var(--emph); }
+.tabs button[aria-selected=true] b { color: var(--emph); }
 .design[hidden] { display: none; }
 #h-sc .thr, #h-sc .thr-fill, #h-sc .thr-lab { display: none; }
-footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 12px; max-width: 900px; }
+footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--text-muted); border-top: 1px solid var(--text-primary); padding-top: 14px; max-width: 900px; }
 </style></head>
 <body><main>
-<nav class="top"><b>The Evolution of LLM Value</b><a href="#hook">1 Hook</a><a href="#insights">2 Rising insights</a><a href="#message">3 Main message</a><a href="#explore">4 Explore</a><a href="#about">About the data</a></nav>
+<nav class="top"><b>The Evolution of LLM Value</b><a href="#hook">1 Hook</a><a href="#insights">2 Rising insights</a><a href="#message">3 Main message</a><a href="#explore">4 Explore</a><a href="#about">About the data</a><span id="progress" aria-hidden="true"></span></nav>
 
-<header class="hero">
-  <p class="step">The Evolution of LLM Value · 453 models · prices and scores from 2026-03-31</p>
-  <h1 id="hero-h1"></h1>
-  <p>We compare language models by benchmark score and list price. Scroll to see how far the drop goes across the whole market, what it means for a monthly bill, and then test it on your own task and budget.</p>
+<header class="hero" id="hero">
+  <svg id="hero-bg" aria-hidden="true"></svg>
+  <div class="hero-head">
+    <div>
+      <p class="hero-kicker">The Evolution of LLM Value · 453 models · prices and scores from 2026-03-31</p>
+      <h1 id="hero-h1"></h1>
+    </div>
+    <p class="hero-num"><span class="n" id="hero-ratio"></span><span class="d" id="hero-sub"></span></p>
+  </div>
+  <div class="hero-foot">
+    <div>
+      <p class="hero-lede">We compare language models by benchmark score and list price. Scroll to see how far the drop goes across the whole market, what it means for a monthly bill, and then test it on your own task and budget.</p>
+      <a class="hero-scroll" href="#hook">Begin with one comparison ↓</a>
+    </div>
+    <p class="hero-cap" id="hero-cap"></p>
+  </div>
 </header>
 
 <section class="story" id="hook">
+ <div class="split">
+ <div class="txt">
   <p class="step">1 · Hook</p>
   <h2>The best model of 2024 and its later, cheaper matches</h2>
   <p class="big" id="hook-line"></p>
@@ -53,6 +133,9 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
     <div class="grp"><span class="lab">Task</span><div class="seg" id="h-task"></div></div>
     <label class="grow"><span class="lab">A later model counts as a match if it scores at least <b id="h-pct-val"></b> of that year's best score</span><input id="h-pct" type="range" min="50" max="100" step="1" value="100"></label>
   </div>
+  <p class="explain"><strong>Filter</strong> · the task and match sliders remove models and recompute both charts.</p>
+ </div>
+ <div class="vis">
   <div class="layoutB">
     <section class="card"><h2 id="h-flag-title"></h2><p class="hint" id="h-flag-hint"></p><div id="h-flags"></div><div class="legend"><span><i class="blk"></i>best model of that year</span><span><i class="hol" style="border-color:var(--open)"></i><i class="hol" style="border-color:var(--prop)"></i>cheapest later model that matches (blue = open weights, orange = proprietary)</span></div><p class="coverage">Best model = highest-scoring paid model released that year. Match = released later, cheaper, and scoring at least the chosen share of its score. Free models are counted, not priced. 2023 is left out (7 models).</p></section>
     <section class="card"><h2 id="h-sc-title"></h2><p class="hint" id="h-sc-hint"></p><div id="h-sc"></div>
@@ -60,14 +143,24 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
       <p class="coverage" id="h-cov"></p>
       <p class="explain link"><strong>Link</strong> · clicking a column in the left chart only highlights models here. Nothing is removed.</p></section>
   </div>
-  <p class="explain"><strong>Filter</strong> · the task and match sliders remove models and recompute both charts.</p>
+ </div>
+ </div>
 </section>
 
 <section class="story" id="insights">
+ <div class="split">
+ <div class="txt">
   <p class="step">2 · Rising insights</p>
   <h2>Is this one example, or the whole market?</h2>
   <p class="big">Three views widen the example, each with a different question: how the cost of a score changed over time, what each step up in score costs, and what the top model costs against the cheapest good-enough one.</p>
-  <section class="card">
+  <ol class="draft-index">
+    <li><a href="#c1" data-f="c1"><span>A</span>Has the cost of a given score fallen over the release years?</a></li>
+    <li><a href="#c2" data-f="c2"><span>B</span>What does each step up in score cost?</a></li>
+    <li><a href="#c3" data-f="c3"><span>C</span>How much does the top model cost next to the cheapest good-enough one?</a></li>
+  </ol>
+ </div>
+ <div class="vis insight-cards">
+  <section class="card" id="c1"><span class="fig-n">A</span>
     <div class="controls">
       <div class="grp"><span class="lab">Task</span><div class="seg" id="i3-task"></div></div>
       <label class="grow"><span class="lab">Good enough = at least <b id="i3-pct-val"></b> of the best score in that task</span><input id="i3-pct" type="range" min="30" max="100" step="1" value="80"></label>
@@ -80,7 +173,7 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
     <p class="explain link"><strong>Link</strong> · hovering a dot shows that model's license, scores, price and speed. <strong>Filter</strong> · the task buttons and the slider recompute every dot.</p>
   </section>
 
-  <section class="card" style="margin-top:14px">
+  <section class="card" id="c2"><span class="fig-n">B</span>
     <div class="controls">
       <div class="grp"><span class="lab">Task</span><div class="seg" id="i-task"></div></div>
       <div class="grp"><span class="lab">License</span><div class="seg" id="i-lic"></div></div>
@@ -94,7 +187,7 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
     <p class="coverage" id="i1-cov"></p>
     <p class="explain link"><strong>Link</strong> · clicking a score band only highlights it and shows its range. <strong>Filter</strong> · the task and license buttons remove models and recompute every median.</p>
   </section>
-  <section class="card" style="margin-top:14px">
+  <section class="card" id="c3"><span class="fig-n">C</span>
     <div class="controls">
       <div class="grp"><span class="lab">Monthly usage (75% input / 25% output)</span><div class="seg" id="i2-usage"></div></div>
       <label class="grow"><span class="lab">Good enough = at least <b id="i2-pct-val"></b> of the best score in that task</span><input id="i2-pct" type="range" min="50" max="100" step="1" value="80"></label>
@@ -106,14 +199,21 @@ footer { margin-top: 40px; font-size: 12.5px; color: var(--text-muted); border-t
     <p class="coverage" id="i2-cov"></p>
     <p class="explain link"><strong>Filter</strong> · the usage buttons and the slider recompute every bar. Hovering a bar shows the model's license, scores, price and speed (link, nothing removed).</p>
   </section>
+ </div>
+ </div>
 </section>
-
 <section class="story" id="message">
+ <div class="split">
+ <div class="txt">
   <p class="step">3 · Main message</p>
   <h2>Near-top scores can cost a fraction of the top price</h2>
   <p class="big" id="msg-line"></p>
-  <div class="stats" id="stats"></div>
   <p class="coverage" id="msg-cov"></p>
+ </div>
+ <div class="vis">
+  <div class="stats" id="stats"></div>
+ </div>
+ </div>
 </section>
 
 <section class="story" id="explore">

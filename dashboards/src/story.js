@@ -6,13 +6,133 @@
   const usd = (v) => C.fmtUSD(v);
   const bill = (v) => "$" + v.toFixed(2);
 
-  $("hero-h1").textContent = `Language models that match 2024's best now cost up to ${H.ratio}× less`;
+  $("hero-h1").innerHTML = `Language models that match 2024's best now cost <em>up to ${H.ratio}× less.</em>`;
   function hookLine() {
     const t = C.taskOf(S.task), r = C.flagships(S.task, S.pct).find((q) => q.year === 2024);
     if (!r || !r.flag || !r.cheapest) { $("hook-line").textContent = `No paid model released after 2024 is cheaper and scores at least ${S.pct}% of the best 2024 ${t.short} model.`; return; }
     const f = r.flag, c = r.cheapest, k = f.price / c.price;
     $("hook-line").innerHTML = `In the March 2026 snapshot, <b>${c.name}</b> scores ${c[S.task]} on ${t.short} at <b>${usd(c.price)}</b> per million tokens. The best paid 2024 model, <b>${f.name}</b>, scores ${f[S.task]} at <b>${usd(f.price)}</b>. That is <b>${k >= 10 ? k.toFixed(0) : k.toFixed(1)}× cheaper</b>${c[S.task] >= f[S.task] ? " for an equal or higher score" : ` for at least ${S.pct}% of its score`}.`;
   }
+  // hero: a poster made of the data. Every paid model with a general score is one thin stroke rising from the
+  // baseline to its list price (log), placed in its release-year column. The ink line is the cheapest paid model
+  // scoring at least the 2024 best model's score (a16z "LLMflation" style), drawn through the real dots.
+  $("hero-ratio").textContent = `${H.ratio}×`;
+  const heroSub = `cheaper, for the same score.<br><b>${H.old.name}</b>, 2024: ${usd(H.old.price)} per million tokens.<br><b>${H.new.name}</b>, 2026: ${usd(H.new.price)}.`;
+  $("hero-sub").innerHTML = heroSub;
+  (function heroBg() {
+    const svg = d3.select("#hero-bg"), hero = $("hero");
+    const pts = DATA.models.filter((m) => m.price > 0 && !m.free && m.general != null && C.COHORTS.includes(m.year));
+    const thr = H.old.score;
+    const steps = C.COHORTS.map((y) => ({ year: y, m: d3.least(pts.filter((m) => m.year <= y && m.general >= thr), (m) => m.price) }));
+    $("hero-cap").innerHTML = `<b>Move your mouse along the line to travel in time.</b><br>Each stroke is one of ${pts.length} paid models, rising to its list price per million tokens (log scale), in its release-year column; darker strokes score at least ${thr}, ${H.old.name}'s general score. The ink line is the cheapest of those. The data has release years only, so placement inside a year is arbitrary.`;
+    // deterministic position inside each year's column
+    const jit = (s) => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return ((h >>> 0) % 1000) / 1000; };
+    const px = (m) => m.year + 0.06 + 0.88 * jit(m.id);
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let lastW = 0, lastH = 0;
+    function draw() {
+      const w = hero.clientWidth, h = hero.clientHeight;
+      if (!w || (Math.abs(w - lastW) < 2 && Math.abs(h - lastH) < 2)) return;
+      lastW = w; lastH = h;
+      svg.selectAll("*").remove();
+      const narrow = w < 760, pad = Math.max(16, w / 2 - 604);
+      const L = pad, R = pad + (narrow ? 0 : 44), base = hero.querySelector(".hero-foot").offsetTop - 44, top = h * (narrow ? 0.34 : 0.26);
+      const x = d3.scaleLinear([C.COHORTS[0], C.COHORTS[C.COHORTS.length - 1] + 1], [L, w - R]);
+      const y = d3.scaleLog(d3.extent(pts, (m) => m.price), [base, top]).nice();
+      const defs = svg.append("defs");
+      // hand-drawn wobble for the ink line, paper grain for the whole poster
+      defs.append("filter").attr("id", "hero-ink").call((f) => {
+        f.append("feTurbulence").attr("type", "fractalNoise").attr("baseFrequency", 0.035).attr("numOctaves", 2).attr("seed", 7).attr("result", "n");
+        f.append("feDisplacementMap").attr("in", "SourceGraphic").attr("in2", "n").attr("scale", 2.4);
+      });
+      defs.append("filter").attr("id", "hero-grain").call((f) => {
+        f.append("feTurbulence").attr("type", "fractalNoise").attr("baseFrequency", 0.9).attr("numOctaves", 2).attr("seed", 3);
+        f.append("feColorMatrix").attr("values", "0 0 0 0 0.4  0 0 0 0 0.33  0 0 0 0 0.22  0 0 0 0.09 0");
+      });
+      svg.append("rect").attr("width", w).attr("height", h).attr("filter", "url(#hero-grain)");
+      // everything data-ish sits in one dimmed layer; the words on top stay the main read
+      const art = svg.append("g").attr("class", "h-art");
+      // faint price rules
+      const decades = y.ticks().filter((v) => Number.isInteger(Math.log10(v)) && v <= 100);
+      const rules = art.append("g").attr("class", "h-rule");
+      rules.selectAll("line").data(decades).join("line").attr("x1", L).attr("x2", w - R).attr("y1", y).attr("y2", y);
+      if (!narrow) rules.selectAll("text").data(decades).join("text").attr("x", w - R + 8).attr("y", y).attr("dy", "0.32em").text((v) => C.fmtUSD(v).replace(".00", ""));
+      // the strokes
+      const g = art.append("g").attr("class", "h-strokes");
+      const s = g.selectAll("line").data(d3.sort(pts, (m) => m.general >= thr)).join("line")
+        .attr("class", (m) => (m.open ? "open" : "prop") + (m.general >= thr ? " hit" : ""))
+        .attr("x1", (m) => x(px(m))).attr("x2", (m) => x(px(m))).attr("y1", base).attr("y2", base);
+      s.transition().duration(reduce ? 0 : 900).ease(d3.easeCubicOut).delay((m) => (reduce ? 0 : (x(px(m)) - L) / (w - L - R) * 1100))
+        .attr("y2", (m) => y(m.price));
+      g.selectAll("circle").data(pts.filter((m) => m.general >= thr)).join("circle")
+        .attr("class", (m) => (m.open ? "open" : "prop")).attr("r", 1.9).attr("cx", (m) => x(px(m))).attr("cy", (m) => y(m.price))
+        .attr("opacity", 0).transition().delay((m) => (reduce ? 0 : 700 + (x(px(m)) - L) / (w - L - R) * 1100)).duration(reduce ? 0 : 400).attr("opacity", 1);
+      // baseline and year labels
+      art.append("line").attr("class", "h-base").attr("x1", L).attr("x2", w - R).attr("y1", base).attr("y2", base);
+      art.append("g").attr("class", "h-year").selectAll("text").data(C.COHORTS).join("text")
+        .attr("x", (d) => x(d) + 2).attr("y", base + 22).text((d) => d);
+      // ink line through the real cheapest-match dots
+      const line = [];
+      steps.filter((st, i) => !i || st.m !== steps[i - 1].m).forEach((st, i) => { if (i) line.push([px(st.m), line[line.length - 1][1]]); line.push([px(st.m), st.m.price]); });
+      line.push([x.domain()[1], line[line.length - 1][1]]);
+      const d = d3.line((p) => x(p[0]), (p) => y(p[1]))(line);
+      const ink = art.append("g").attr("class", "h-ink").attr("filter", "url(#hero-ink)");
+      const paths = [ink.append("path").attr("d", d).attr("class", "thick"), ink.append("path").attr("d", d).attr("class", "thin").attr("transform", "translate(1.5,-2)")];
+      paths.forEach((p, i) => {
+        const len = p.node().getTotalLength();
+        p.attr("stroke-dasharray", len).attr("stroke-dashoffset", reduce ? 0 : len)
+          .transition().delay(reduce ? 0 : 1300 + i * 250).duration(reduce ? 0 : 2000).ease(d3.easeCubicInOut).attr("stroke-dashoffset", 0);
+      });
+      // annotations: each year's flagship (best paid model, the shared definition) and the two cheaper steps
+      const flags = C.flagships("general", 100).filter((r) => r.flag).map((r) => r.flag);
+      const sc = (m) => `score ${m.general} · ${usd(m.price)}`;
+      const notes = [
+        ...flags.map((m, i) => ({ m, kind: "flag", kicker: `Best of ${m.year}`, text: `${C.trunc(m.name, narrow ? 16 : 26)}`, sub: sc(m), dx: i === flags.length - 1 ? -12 : 12, dy: i === 1 ? 24 : -50, end: i === flags.length - 1 })),
+        ...(narrow ? [] : [{ m: steps[1].m, kind: "cheap", text: `${steps[1].m.name}`, sub: `score ${steps[1].m.general} · ${usd(steps[1].m.price)}`, dx: -12, dy: 22, end: true }]),
+        { m: steps[steps.length - 1].m, kind: "cheap", text: narrow ? "" : steps[steps.length - 1].m.name, sub: `score ${steps[steps.length - 1].m.general} · ${usd(steps[steps.length - 1].m.price)}`, dx: 12, dy: 24 },
+      ];
+      const a = svg.append("g").attr("class", "h-note").selectAll("g").data(narrow ? notes.filter((n) => n.kind === "flag") : notes).join("g")
+        .attr("class", (n) => n.kind).attr("opacity", 0);
+      a.filter((n) => n.kind === "flag").append("line").attr("class", "stem")
+        .attr("x1", (n) => x(px(n.m))).attr("x2", (n) => x(px(n.m))).attr("y1", base).attr("y2", (n) => y(n.m.price));
+      const at = a.append("g").attr("transform", (n) => `translate(${x(px(n.m))},${y(n.m.price)})`);
+      at.append("circle").attr("r", (n) => (n.kind === "flag" ? 5 : 4.5));
+      const t = at.append("text").attr("x", (n) => n.dx).attr("y", (n) => n.dy).attr("text-anchor", (n) => (n.end ? "end" : "start"));
+      if (narrow) t.remove();
+      t.filter((n) => n.kicker).append("tspan").attr("class", "k").text((n) => n.kicker);
+      t.append("tspan").attr("class", "nm").attr("x", (n) => n.dx).attr("dy", (n) => (n.kicker ? "1.25em" : 0)).text((n) => n.text);
+      t.append("tspan").attr("class", "sub").attr("x", (n) => n.dx).attr("dy", (n) => (n.text ? "1.25em" : 0)).text((n) => n.sub);
+      a.transition().delay((n, i) => (reduce ? 0 : 1600 + i * 350)).duration(reduce ? 0 : 500).attr("opacity", 1);
+
+      // time probe: move the mouse along the poster; the big number reads the ink line at that point
+      const knots = steps.filter((st, i) => !i || st.m !== steps[i - 1].m).map((st) => st.m);
+      const probe = svg.append("g").attr("class", "h-probe").attr("opacity", 0);
+      const pLine = probe.append("line").attr("y1", top - 24).attr("y2", base);
+      const pDot = probe.append("circle").attr("r", 6);
+      hero.onpointerleave = probeOff;
+      hero.onpointermove = narrow ? null : (ev) => {
+        if (ev.pointerType !== "mouse") return;
+        const mx = ev.clientX - hero.getBoundingClientRect().left;
+        if (mx < L || mx > w - R) return probeOff();
+        const t = x.invert(mx), cur = knots.filter((m) => px(m) <= t).at(-1);
+        d3.select("#hero-ratio").interrupt("count");
+        probe.attr("opacity", 1);
+        pLine.attr("x1", mx).attr("x2", mx);
+        pDot.attr("cx", mx).attr("cy", cur ? y(cur.price) : -99);
+        $("hero-ratio").textContent = cur ? `${Math.round(H.old.price / cur.price)}×` : "—";
+        $("hero-sub").innerHTML = cur
+          ? `cheaper than <b>${H.old.name}</b>, for the same score, here.<br>Cheapest at that score so far: <b>${cur.name}</b> (${cur.year}), ${usd(cur.price)}.<br>Move away to reset.`
+          : `Nothing in the data scores ${thr} yet.<br>Keep moving right.`;
+      };
+      function probeOff() { probe.attr("opacity", 0); $("hero-ratio").textContent = `${H.ratio}×`; $("hero-sub").innerHTML = heroSub; }
+    }
+    draw();
+    new ResizeObserver(draw).observe(hero);
+    // the big number counts up while the ink line draws
+    if (!reduce) d3.select("#hero-ratio").transition("count").delay(1300).duration(2000).ease(d3.easeCubicInOut)
+      .tween("text", function () { return (t) => { this.textContent = `${Math.round(1 + (H.ratio - 1) * t)}×`; }; });
+  })();
+
 
   // controls
   const seg = $("h-task");
@@ -34,7 +154,7 @@
     $("h-pct-val").textContent = S.pct + "%";
     $("h-flag-title").textContent = `What each year's best model cost, and what matches it later · ${t.short}`;
     $("h-sc-title").textContent = `All models: price vs. score · ${t.short}`;
-    $("h-flag-hint").textContent = "Each column is a release year. The black dot is that year's best paid model. The open circle is the cheapest model released later that still matches its score, and the line is the saving. Click a column to see these models on the right.";
+    $("h-flag-hint").textContent = "Each column is a release year. The black dot is that year's best paid model. The open circle is the cheapest model released later that still matches its score, and the line is the saving. Click a column to see these models in the chart below.";
     hookLine();
     flags.update({ task: S.task, pct: S.pct, selectedYear: S.year });
     const r = row();
@@ -56,5 +176,44 @@
     [`${sp.n_fast} of ${sp.n_speed_known}`, `good-enough general models with known speed run at 100 tokens/s or more`],
   ];
   $("stats").innerHTML = cards.map(([n, d]) => `<div class="stat"><div class="n">${n}</div><div class="d">${d}</div></div>`).join("");
+
+  // page motion: entrance reveals, counting numbers, reading progress, current section in the nav, insight index
+  (function pageMotion() {
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const count = (el) => {
+      const m = el.textContent.match(/^(\d+)(.*)$/s);
+      if (!m) return;
+      const to = +m[1], rest = m[2];
+      d3.select(el).transition().duration(1400).ease(d3.easeCubicOut).tween("text", () => (t) => { el.textContent = Math.round(1 + (to - 1) * t) + rest; });
+    };
+    if (!reduce) {
+      document.documentElement.classList.add("js-rv");
+      const io = new IntersectionObserver((es) => es.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("in");
+        e.target.querySelectorAll(".stat .n").forEach(count);
+        io.unobserve(e.target);
+      }), { rootMargin: "0px 0px -8% 0px" });
+      document.querySelectorAll(".split > .txt, .split > .vis, #explore").forEach((box) => {
+        [...box.children].filter((c) => !c.classList.contains("design")).forEach((c, i) => { c.classList.add("rv"); c.style.transitionDelay = `${Math.min(i, 5) * 70}ms`; io.observe(c); });
+      });
+    }
+    // reading progress and the current section
+    const bar = $("progress"), root = document.documentElement;
+    const onScroll = () => { bar.style.transform = `scaleX(${root.scrollTop / (root.scrollHeight - root.clientHeight) || 0})`; };
+    addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    const links = [...document.querySelectorAll("nav.top a")];
+    const navIo = new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting) links.forEach((a) => a.toggleAttribute("aria-current", a.getAttribute("href") === "#" + e.target.id));
+    }), { rootMargin: "-45% 0px -50% 0px" });
+    ["hero", "hook", "insights", "message", "explore", "about"].forEach((id) => navIo.observe($(id)));
+    // insights: an index row and its chart card light up together; click scrolls to the card
+    document.querySelectorAll(".draft-index a").forEach((a) => {
+      const f = $(a.dataset.f), on = (v) => { a.classList.toggle("on", v); f.classList.toggle("on", v); };
+      for (const el of [a, f]) { el.addEventListener("mouseenter", () => on(true)); el.addEventListener("mouseleave", () => on(false)); }
+      a.onclick = (ev) => { ev.preventDefault(); f.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); };
+    });
+  })();
   $("msg-cov").textContent = `Based on ${cov.n_general_paid} paid models with a general score (${cov.n_coding_paid} for coding, ${cov.n_math_paid} for math). ${cov.n_no_price} of ${cov.n_models} models have no price and ${cov.n_free} are free; neither group is counted in price ratios. Only 6 models score above 50, so the top end is thin. List prices only; reasoning models often use more tokens, so real bills can be higher.`;
 })();
