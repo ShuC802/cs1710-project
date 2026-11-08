@@ -23,7 +23,7 @@ To redraw the three draft images: `python3 dashboards/make_drafts.py` (needs mat
 
 ## Shared definitions
 - Good enough = score >= X% of the best score in that task (slider, default 80%).
-- Monthly bill = tokens x list price at 75% input / 25% output. Light / medium / heavy = 10M / 100M / 1B tokens.
+- Monthly bill = tokens x API price at 75% input / 25% output. Light / medium / heavy = 10M / 100M / 1B tokens.
 - Flagship = best paid model of a release-year cohort (2024-2026). Match = later cohort, cheaper, score >= X% of the flagship's. Free models are counted, never priced.
 - Filter = remove and recompute. Link = highlight only. Each view says which it does.
 

@@ -101,6 +101,14 @@ section.story > h2, .split > .txt > h2 { font-size: clamp(28px, 3.4vw, 42px); li
 .design[hidden] { display: none; }
 #h-sc .thr, #h-sc .thr-fill, #h-sc .thr-lab { display: none; }
 footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--text-muted); border-top: 1px solid var(--text-primary); padding-top: 14px; max-width: 900px; }
+.defsbox { margin: 0 auto; max-width: 960px; font-size: 13.5px; padding: 12px 16px; }
+.defsbox ul { margin: 6px 0 0; padding-left: 18px; }
+.defsbox li { margin: 3px 0; color: var(--text-secondary); }
+.defsbox b { color: var(--text-primary); }
+.point { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent, var(--emph)); margin: 0 0 2px; font-weight: 600; }
+.points { display: grid; gap: 8px; margin: 12px 0 18px; padding: 0; list-style: none; }
+.points li { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 14.5px; }
+.points li b.tag { display: inline-block; margin: 0 0 4px; padding: 0; border: 0; }
 </style></head>
 <body><main>
 <nav class="top"><b>The Evolution of LLM Value</b><a href="#hook">1 Hook</a><a href="#insights">2 Rising insights</a><a href="#message">3 Main message</a><a href="#explore">4 Explore</a><a href="#about">About the data</a><span id="progress" aria-hidden="true"></span></nav>
@@ -116,12 +124,22 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
   </div>
   <div class="hero-foot">
     <div>
-      <p class="hero-lede">We compare language models by benchmark score and list price. Scroll to see how far the drop goes across the whole market, what it means for a monthly bill, and then test it on your own task and budget.</p>
+      <p class="hero-lede">We compare language models by benchmark score and API price. Scroll to see how far the drop goes across the whole market, what it means for a monthly bill, and then test it on your own task and budget.</p>
       <a class="hero-scroll" href="#hook">Begin with one comparison ↓</a>
     </div>
     <p class="hero-cap" id="hero-cap"></p>
   </div>
 </header>
+
+<section id="defs" style="padding:56px 16px 0">
+  <div class="defsbox card"><b>How to read the numbers</b>
+    <ul>
+      <li><b>Score:</b> the Artificial Analysis Intelligence Index v4.0 (General, a composite of 10 evaluations on a 0–100 scale), Coding Index and Math Index, as reported in the dataset. Higher is better. Each task has its own scale; the best scores in this snapshot are <span id="def-best"></span>.</li>
+      <li><b>Price and monthly bill:</b> price is the API price per 1M tokens. A monthly bill is tokens per month × price, at 75% input and 25% output. Light, medium and heavy use are 10M, 100M and 1B tokens a month.</li>
+      <li><b>Time:</b> release year only, because the data has no exact dates. All prices and scores are from the 2026-03-31 snapshot.</li>
+    </ul>
+  </div>
+</section>
 
 <section class="story" id="hook">
  <div class="split">
@@ -139,7 +157,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
   <div class="layoutB">
     <section class="card"><h2 id="h-flag-title"></h2><p class="hint" id="h-flag-hint"></p><div id="h-flags"></div><div class="legend"><span><i class="blk"></i>best model of that year</span><span><i class="hol" style="border-color:var(--open)"></i><i class="hol" style="border-color:var(--prop)"></i>cheapest later model that matches (blue = open weights, orange = proprietary)</span></div><p class="coverage">Best model = highest-scoring paid model released that year. Match = released later, cheaper, and scoring at least the chosen share of its score. Free models are counted, not priced. 2023 is left out (7 models).</p></section>
     <section class="card"><h2 id="h-sc-title"></h2><p class="hint" id="h-sc-hint"></p><div id="h-sc"></div>
-      <div class="legend"><span><i style="background:var(--open)"></i>open weights</span><span><i style="background:var(--prop)"></i>proprietary</span><span><i class="ringi"></i>best model of the selected year</span><span>shaded box = cheaper and still matches</span><span>left strip = free models</span></div>
+      <div class="legend"><span><i style="background:var(--open)"></i>open weights</span><span><i style="background:var(--prop)"></i>proprietary</span><span><i class="ringi"></i>best model of the selected year</span><span>shaded box = later models that are cheaper and score at least the chosen share of the best model's score</span><span>left strip = free models</span></div>
       <p class="coverage" id="h-cov"></p>
       <p class="explain link"><strong>Link</strong> · clicking a column in the left chart only highlights models here. Nothing is removed.</p></section>
   </div>
@@ -152,7 +170,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
  <div class="txt">
   <p class="step">2 · Rising insights</p>
   <h2>Is this one example, or the whole market?</h2>
-  <p class="big">Three views widen the example, each with a different question: how the cost of a score changed over time, what each step up in score costs, and what the top model costs against the cheapest good-enough one.</p>
+  <p class="big">The hook is one example. Three views test it across the whole market: <b>A</b> asks whether the cost of a score fell over time, <b>B</b> what each step up in score costs, and <b>C</b> what the top model costs next to the cheapest good-enough one in a monthly bill. The Main message sums them up.</p>
   <ol class="draft-index">
     <li><a href="#c1" data-f="c1"><span>A</span>Has the cost of a given score fallen over the release years?</a></li>
     <li><a href="#c2" data-f="c2"><span>B</span>What does each step up in score cost?</a></li>
@@ -165,8 +183,9 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
       <div class="grp"><span class="lab">Task</span><div class="seg" id="i3-task"></div></div>
       <label class="grow"><span class="lab">Good enough = at least <b id="i3-pct-val"></b> of the best score in that task</span><input id="i3-pct" type="range" min="30" max="100" step="1" value="80"></label>
     </div>
+    <p class="point">A · Over time</p>
     <h2>Has the cost of a given score fallen over the release years?</h2>
-    <p class="hint">One line per release year. For any score on the x-axis, the line shows the price of the cheapest paid model from that year that scores at least that much. A line that stops means no model from that year scored higher. The dashed line is the good-enough score from the slider; the dots show what the cheapest model of each year costs there.</p>
+    <p class="hint">One line per release year: the cheapest paid model that reaches each score. A line that stops means no model from that year scored higher. Dashed line: the good-enough score from the slider. Dots: each year's cheapest model there.</p>
     <p class="big" style="font-size:15px;margin:2px 0 8px" id="i3-take"></p>
     <div id="i3-chart"></div>
     <p class="coverage" id="i3-cov"></p>
@@ -178,6 +197,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
       <div class="grp"><span class="lab">Task</span><div class="seg" id="i-task"></div></div>
       <div class="grp"><span class="lab">License</span><div class="seg" id="i-lic"></div></div>
     </div>
+    <p class="point">B · Score and price</p>
     <h2 id="i1-title"></h2>
     <p class="hint" id="i1-hint"></p>
     <p class="big" style="font-size:15px;margin:2px 0 8px" id="i1-take"></p>
@@ -192,8 +212,10 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
       <div class="grp"><span class="lab">Monthly usage (75% input / 25% output)</span><div class="seg" id="i2-usage"></div></div>
       <label class="grow"><span class="lab">Good enough = at least <b id="i2-pct-val"></b> of the best score in that task</span><input id="i2-pct" type="range" min="50" max="100" step="1" value="80"></label>
     </div>
+    <p class="point">C · Monthly bill</p>
     <h2>How much does the top model cost next to the cheapest good-enough one?</h2>
-    <p class="hint">For each task: the paid model with the highest score, and the cheapest paid model that still reaches the good-enough share of that score. Each bar is a model's monthly bill, and all three tasks share the same dollar axis.</p>
+    <p class="hint">For each task: the top-scoring paid model and the cheapest paid model that is still good enough. Each bar is a monthly bill, on one dollar axis for all three tasks.</p>
+    <p class="big" style="font-size:15px;margin:2px 0 8px" id="i2-take"></p>
     <div id="i2-chart"></div>
     <div class="legend"><span><i class="sq" style="background:var(--role-top)"></i>top-scoring model in the task</span><span><i class="sq" style="background:var(--role-cheap)"></i>cheapest model that still reaches the good-enough score</span></div>
     <p class="coverage" id="i2-cov"></p>
@@ -211,6 +233,8 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
   <p class="coverage" id="msg-cov"></p>
  </div>
  <div class="vis">
+  <p class="hint" style="margin:0">What each view adds to this message:</p>
+  <ul class="points" id="msg-points"></ul>
   <div class="stats" id="stats"></div>
  </div>
  </div>
@@ -219,7 +243,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <section class="story" id="explore">
   <p class="step">4 · Solution</p>
   <h2>Test it on your own task and budget</h2>
-  <p class="big">Two ways in to the same question: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? Explore by performance (Design A) starts from price-versus-score plots. Explore by budget (Design B) starts from your requirements.</p>
+  <p class="big">The three views above hold for the whole market. Here you apply them to your own case: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? <b>Explore by performance</b> (Design A) starts from price-versus-score plots. <b>Explore by budget</b> (Design B) starts from your requirements. Both use the same definitions as above.</p>
   <div class="tabs" role="tablist">
     <button role="tab" id="tab-a" aria-selected="true"><b>Explore by performance</b> <span style="color:var(--text-muted)">(Design A · brush &amp; link)</span></button>
     <button role="tab" id="tab-b" aria-selected="false"><b>Explore by budget</b> <span style="color:var(--text-muted)">(Design B · shared filters)</span></button>
@@ -229,8 +253,8 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 </section>
 
 <footer id="about">
-  <p><b>Data.</b> LLM Price-Performance Tracker (Kaggle), 453 model endpoints, scrape of 2026-03-31. The tracker reports only a release year, so time views group models by release year. 138 models have no price and 161 have no year; each view says what it leaves out. Nothing is imputed. Cleaning steps: <code>dashboards/data/cleaning_log.txt</code>.</p>
-  <p><b>Prices</b> are list prices from the 2026-03-31 snapshot and may have changed since. Reasoning models often emit more tokens, so real bills can run higher.</p>
+  <p><b>Data.</b> LLM Price-Performance Tracker (Kaggle), 453 model endpoints, scrape of 2026-03-31. Scores are the Artificial Analysis indexes in the dataset (columns aa_intelligence_index, aa_coding_index, aa_math_index); all 453 endpoints come from the Artificial Analysis API. The tracker reports only a release year, so time views group models by release year. 138 models have no price and 161 have no year; each view says what it leaves out. Nothing is imputed. Cleaning steps: <code>dashboards/data/cleaning_log.txt</code>.</p>
+  <p><b>Prices</b> are API prices from the 2026-03-31 snapshot and may have changed since. Reasoning models often emit more tokens, so real bills can run higher.</p>
 </footer>
 </main>
 <script>/*D3*/</script>

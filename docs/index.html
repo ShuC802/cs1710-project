@@ -252,6 +252,14 @@ section.story > h2, .split > .txt > h2 { font-size: clamp(28px, 3.4vw, 42px); li
 .design[hidden] { display: none; }
 #h-sc .thr, #h-sc .thr-fill, #h-sc .thr-lab { display: none; }
 footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--text-muted); border-top: 1px solid var(--text-primary); padding-top: 14px; max-width: 900px; }
+.defsbox { margin: 0 auto; max-width: 960px; font-size: 13.5px; padding: 12px 16px; }
+.defsbox ul { margin: 6px 0 0; padding-left: 18px; }
+.defsbox li { margin: 3px 0; color: var(--text-secondary); }
+.defsbox b { color: var(--text-primary); }
+.point { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent, var(--emph)); margin: 0 0 2px; font-weight: 600; }
+.points { display: grid; gap: 8px; margin: 12px 0 18px; padding: 0; list-style: none; }
+.points li { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 14.5px; }
+.points li b.tag { display: inline-block; margin: 0 0 4px; padding: 0; border: 0; }
 </style></head>
 <body><main>
 <nav class="top"><b>The Evolution of LLM Value</b><a href="#hook">1 Hook</a><a href="#insights">2 Rising insights</a><a href="#message">3 Main message</a><a href="#explore">4 Explore</a><a href="#about">About the data</a><span id="progress" aria-hidden="true"></span></nav>
@@ -267,12 +275,22 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
   </div>
   <div class="hero-foot">
     <div>
-      <p class="hero-lede">We compare language models by benchmark score and list price. Scroll to see how far the drop goes across the whole market, what it means for a monthly bill, and then test it on your own task and budget.</p>
+      <p class="hero-lede">We compare language models by benchmark score and API price. Scroll to see how far the drop goes across the whole market, what it means for a monthly bill, and then test it on your own task and budget.</p>
       <a class="hero-scroll" href="#hook">Begin with one comparison ↓</a>
     </div>
     <p class="hero-cap" id="hero-cap"></p>
   </div>
 </header>
+
+<section id="defs" style="padding:56px 16px 0">
+  <div class="defsbox card"><b>How to read the numbers</b>
+    <ul>
+      <li><b>Score:</b> the Artificial Analysis Intelligence Index v4.0 (General, a composite of 10 evaluations on a 0–100 scale), Coding Index and Math Index, as reported in the dataset. Higher is better. Each task has its own scale; the best scores in this snapshot are <span id="def-best"></span>.</li>
+      <li><b>Price and monthly bill:</b> price is the API price per 1M tokens. A monthly bill is tokens per month × price, at 75% input and 25% output. Light, medium and heavy use are 10M, 100M and 1B tokens a month.</li>
+      <li><b>Time:</b> release year only, because the data has no exact dates. All prices and scores are from the 2026-03-31 snapshot.</li>
+    </ul>
+  </div>
+</section>
 
 <section class="story" id="hook">
  <div class="split">
@@ -290,7 +308,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
   <div class="layoutB">
     <section class="card"><h2 id="h-flag-title"></h2><p class="hint" id="h-flag-hint"></p><div id="h-flags"></div><div class="legend"><span><i class="blk"></i>best model of that year</span><span><i class="hol" style="border-color:var(--open)"></i><i class="hol" style="border-color:var(--prop)"></i>cheapest later model that matches (blue = open weights, orange = proprietary)</span></div><p class="coverage">Best model = highest-scoring paid model released that year. Match = released later, cheaper, and scoring at least the chosen share of its score. Free models are counted, not priced. 2023 is left out (7 models).</p></section>
     <section class="card"><h2 id="h-sc-title"></h2><p class="hint" id="h-sc-hint"></p><div id="h-sc"></div>
-      <div class="legend"><span><i style="background:var(--open)"></i>open weights</span><span><i style="background:var(--prop)"></i>proprietary</span><span><i class="ringi"></i>best model of the selected year</span><span>shaded box = cheaper and still matches</span><span>left strip = free models</span></div>
+      <div class="legend"><span><i style="background:var(--open)"></i>open weights</span><span><i style="background:var(--prop)"></i>proprietary</span><span><i class="ringi"></i>best model of the selected year</span><span>shaded box = later models that are cheaper and score at least the chosen share of the best model's score</span><span>left strip = free models</span></div>
       <p class="coverage" id="h-cov"></p>
       <p class="explain link"><strong>Link</strong> · clicking a column in the left chart only highlights models here. Nothing is removed.</p></section>
   </div>
@@ -303,7 +321,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
  <div class="txt">
   <p class="step">2 · Rising insights</p>
   <h2>Is this one example, or the whole market?</h2>
-  <p class="big">Three views widen the example, each with a different question: how the cost of a score changed over time, what each step up in score costs, and what the top model costs against the cheapest good-enough one.</p>
+  <p class="big">The hook is one example. Three views test it across the whole market: <b>A</b> asks whether the cost of a score fell over time, <b>B</b> what each step up in score costs, and <b>C</b> what the top model costs next to the cheapest good-enough one in a monthly bill. The Main message sums them up.</p>
   <ol class="draft-index">
     <li><a href="#c1" data-f="c1"><span>A</span>Has the cost of a given score fallen over the release years?</a></li>
     <li><a href="#c2" data-f="c2"><span>B</span>What does each step up in score cost?</a></li>
@@ -316,8 +334,9 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
       <div class="grp"><span class="lab">Task</span><div class="seg" id="i3-task"></div></div>
       <label class="grow"><span class="lab">Good enough = at least <b id="i3-pct-val"></b> of the best score in that task</span><input id="i3-pct" type="range" min="30" max="100" step="1" value="80"></label>
     </div>
+    <p class="point">A · Over time</p>
     <h2>Has the cost of a given score fallen over the release years?</h2>
-    <p class="hint">One line per release year. For any score on the x-axis, the line shows the price of the cheapest paid model from that year that scores at least that much. A line that stops means no model from that year scored higher. The dashed line is the good-enough score from the slider; the dots show what the cheapest model of each year costs there.</p>
+    <p class="hint">One line per release year: the cheapest paid model that reaches each score. A line that stops means no model from that year scored higher. Dashed line: the good-enough score from the slider. Dots: each year's cheapest model there.</p>
     <p class="big" style="font-size:15px;margin:2px 0 8px" id="i3-take"></p>
     <div id="i3-chart"></div>
     <p class="coverage" id="i3-cov"></p>
@@ -329,6 +348,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
       <div class="grp"><span class="lab">Task</span><div class="seg" id="i-task"></div></div>
       <div class="grp"><span class="lab">License</span><div class="seg" id="i-lic"></div></div>
     </div>
+    <p class="point">B · Score and price</p>
     <h2 id="i1-title"></h2>
     <p class="hint" id="i1-hint"></p>
     <p class="big" style="font-size:15px;margin:2px 0 8px" id="i1-take"></p>
@@ -343,8 +363,10 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
       <div class="grp"><span class="lab">Monthly usage (75% input / 25% output)</span><div class="seg" id="i2-usage"></div></div>
       <label class="grow"><span class="lab">Good enough = at least <b id="i2-pct-val"></b> of the best score in that task</span><input id="i2-pct" type="range" min="50" max="100" step="1" value="80"></label>
     </div>
+    <p class="point">C · Monthly bill</p>
     <h2>How much does the top model cost next to the cheapest good-enough one?</h2>
-    <p class="hint">For each task: the paid model with the highest score, and the cheapest paid model that still reaches the good-enough share of that score. Each bar is a model's monthly bill, and all three tasks share the same dollar axis.</p>
+    <p class="hint">For each task: the top-scoring paid model and the cheapest paid model that is still good enough. Each bar is a monthly bill, on one dollar axis for all three tasks.</p>
+    <p class="big" style="font-size:15px;margin:2px 0 8px" id="i2-take"></p>
     <div id="i2-chart"></div>
     <div class="legend"><span><i class="sq" style="background:var(--role-top)"></i>top-scoring model in the task</span><span><i class="sq" style="background:var(--role-cheap)"></i>cheapest model that still reaches the good-enough score</span></div>
     <p class="coverage" id="i2-cov"></p>
@@ -362,6 +384,8 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
   <p class="coverage" id="msg-cov"></p>
  </div>
  <div class="vis">
+  <p class="hint" style="margin:0">What each view adds to this message:</p>
+  <ul class="points" id="msg-points"></ul>
   <div class="stats" id="stats"></div>
  </div>
  </div>
@@ -370,13 +394,13 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <section class="story" id="explore">
   <p class="step">4 · Solution</p>
   <h2>Test it on your own task and budget</h2>
-  <p class="big">Two ways in to the same question: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? Explore by performance (Design A) starts from price-versus-score plots. Explore by budget (Design B) starts from your requirements.</p>
+  <p class="big">The three views above hold for the whole market. Here you apply them to your own case: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? <b>Explore by performance</b> (Design A) starts from price-versus-score plots. <b>Explore by budget</b> (Design B) starts from your requirements. Both use the same definitions as above.</p>
   <div class="tabs" role="tablist">
     <button role="tab" id="tab-a" aria-selected="true"><b>Explore by performance</b> <span style="color:var(--text-muted)">(Design A · brush &amp; link)</span></button>
     <button role="tab" id="tab-b" aria-selected="false"><b>Explore by budget</b> <span style="color:var(--text-muted)">(Design B · shared filters)</span></button>
   </div>
   <div class="design" id="design-a"><h2 class="dh">Explore by performance (Design A)</h2>
-<p class="lede">Here you start from the scatters: <b>brush a region</b> in any task to see the monthly bill of exactly those models; hover a bill row to find the same model in all three tasks.</p>
+<p class="lede">Start from the scatters: <b>brush a region</b> of any task to see the monthly bill of exactly those models. Hover a bill row to find the same model in all three tasks. A shaded band above the dashed line marks the good-enough scores.</p>
 
 <div class="controls card">
   <div class="grp"><span class="lab">Monthly usage (75% input / 25% output tokens)</span><div class="seg" id="a-usage"></div></div>
@@ -390,12 +414,12 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <p class="explain"><strong>Filter</strong> — a brush in ① <u>removes</u> every other model from ② (and makes that task active). &nbsp;
 <strong>Link</strong> — hovering a model in ① or ② only <u>rings</u> it in all three scatters. Nothing is removed.</p>
 <div class="legend"><span><i style="background:var(--open)"></i>open weights</span><span><i style="background:var(--prop)"></i>proprietary</span>
-<span><i class="ringi"></i>hovered, or best model of a year + its matches</span><span>shaded band &amp; dashed line = good-enough threshold</span><span>left lane = free ($0 list price)</span></div>
+<span><i class="ringi"></i>hovered, or best model of a year + its matches</span><span>shaded band &amp; dashed line = good-enough threshold</span><span>left lane = free ($0 price)</span></div>
 
 <div class="row2" style="margin-top:12px">
   <section class="card"><h2 id="a-bill-title"></h2><p class="hint" id="a-bill-hint"></p><div id="a-bill"></div>
     <div class="legend"><span><i class="sq" style="background:var(--seg-in)"></i>input-token cost</span><span><i class="sq" style="background:var(--seg-out)"></i>output-token cost</span></div>
-    <p class="coverage">List prices; reasoning models usually emit more tokens, so real bills run higher. Free models cost $0 to license, not to host.</p></section>
+    <p class="coverage">Monthly bill = tokens per month × API price per 1M tokens, at 75% input and 25% output; API prices as of 2026-03-31. Reasoning models usually emit more tokens, so real bills run higher. Free models cost $0 to license, not to host.</p></section>
   <section class="card"><h2 id="a-flag-title"></h2><p class="hint" id="a-flag-hint"></p><div id="a-flags"></div>
     <div class="legend"><span><i class="blk"></i>best model of that year</span><span><i class="hol" style="border-color:var(--open)"></i><i class="hol" style="border-color:var(--prop)"></i>cheapest later model that matches (blue = open weights, orange = proprietary)</span></div><p class="coverage">Best model = highest-scoring paid model released that year. A later model matches if it is cheaper and scores at least the good-enough share of that score. Free matches are counted, not priced. 2023 is left out (7 models); the latest year has nothing later to compare against.</p>
     <p class="explain link"><strong>Link</strong> — clicking a column only highlights models in the active scatter ①; nothing is removed.</p></section>
@@ -404,13 +428,14 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <details class="defs"><summary>Definitions, data coverage and caveats</summary><ul>
 <li><b>Data:</b> LLM Price-Performance Tracker (Kaggle), scrape of 2026-03-31, 453 model endpoints. Nothing is imputed; every chart says how many models it had to leave out.</li>
 <li><b>Good enough:</b> score ≥ X% of the best score any model has in that task (best: general 57.2, coding 57.3, math 99.0). The three indexes use different scales, so a percentage gives one shared definition.</li>
-<li><b>Monthly bill:</b> usage tokens × the model's input and output list prices at a 3:1 input:output mix (the same mix the dataset's blended price uses).</li>
+<li><b>Monthly bill:</b> tokens per month × the model's input and output API prices, at 75% input and 25% output (the 3:1 mix the dataset's blended price uses). API prices are from the 2026-03-31 snapshot. Light, medium and heavy are 10M, 100M and 1B tokens a month.</li>
+<li><b>Score:</b> the Artificial Analysis Intelligence Index v4.0 (General), Coding Index and Math Index; higher is better.</li>
 <li><b>Release year only:</b> the dataset has no release dates and 161 models have no year, so time views group models by release year and skip those models. The 138 models without a price (mostly open-weight, lower scoring) cannot appear in any price view.</li>
-<li><b>Free</b> models are open-weight models with a $0 list price. They are shown in a separate lane and never used for "× cheaper".</li>
+<li><b>Free</b> models are open-weight models with a $0 price. They are shown in a separate lane and never used for "× cheaper".</li>
 </ul></details>
 </div>
   <div class="design" id="design-b" hidden><h2 class="dh">Explore by budget (Design B)</h2>
-<p class="lede">Here you start from the controls: <b>set a task, usage, quality bar, budget, license and speed floor</b>, then read the surviving models and see where they sit on the price × score map.</p>
+<p class="lede">Start from your requirements: <b>set a task, usage, quality bar, budget, license and speed floor</b>. The models that pass every control are listed with their monthly bill and shown on the price × score map.</p>
 
 <div class="controls card">
   <div class="grp"><span class="lab">Task</span><div class="seg" id="b-task"></div></div>
@@ -427,7 +452,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <div class="layoutB">
   <section class="card"><h2 id="b-bill-title"></h2><p class="hint" id="b-bill-hint"></p><div id="b-bill"></div>
     <div class="legend"><span><i style="background:var(--open)"></i>open weights</span><span><i style="background:var(--prop)"></i>proprietary</span><span><i class="sq" style="background:var(--seg-in)"></i>input cost</span><span><i class="sq" style="background:var(--seg-out)"></i>output cost</span></div>
-    <p class="coverage">List prices; reasoning models usually emit more tokens, so real bills run higher. Free models cost $0 to license, not to host.</p></section>
+    <p class="coverage">Monthly bill = tokens per month × API price per 1M tokens, at 75% input and 25% output; API prices as of 2026-03-31. Reasoning models usually emit more tokens, so real bills run higher. Free models cost $0 to license, not to host.</p></section>
   <div style="display:grid;gap:12px">
     <section class="card"><h2 id="b-sc-title"></h2><div id="b-sc"></div>
       <p class="coverage" id="b-cov"></p>
@@ -439,16 +464,18 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <details class="defs"><summary>Definitions, data coverage and caveats</summary><ul>
 <li><b>Data:</b> LLM Price-Performance Tracker (Kaggle), scrape of 2026-03-31, 453 model endpoints. Nothing is imputed; each view says how many models it leaves out.</li>
 <li><b>Good enough:</b> score ≥ X% of the best score any model has in that task (best: general 57.2, coding 57.3, math 99.0).</li>
+<li><b>Monthly bill:</b> tokens per month × API price per 1M tokens, at 75% input and 25% output; API prices as of 2026-03-31. Light, medium and heavy are 10M, 100M and 1B tokens a month.</li>
+<li><b>Score:</b> the Artificial Analysis Intelligence Index v4.0 (General), Coding Index and Math Index; higher is better.</li>
 <li><b>Budget:</b> a model passes if its monthly bill at the chosen usage is within budget. The dotted line in ② shows the same cap as a price per 1M tokens.</li>
 <li><b>Speed:</b> output tokens/second, known for most but not all priced models; with a speed floor set, models with unknown speed are dropped and counted.</li>
-<li><b>Free</b> models are open-weight with a $0 list price (you pay for hosting yourself). They always pass the budget control.</li>
+<li><b>Free</b> models are open-weight with a $0 price (you pay for hosting yourself). They always pass the budget control.</li>
 </ul></details>
 </div>
 </section>
 
 <footer id="about">
-  <p><b>Data.</b> LLM Price-Performance Tracker (Kaggle), 453 model endpoints, scrape of 2026-03-31. The tracker reports only a release year, so time views group models by release year. 138 models have no price and 161 have no year; each view says what it leaves out. Nothing is imputed. Cleaning steps: <code>dashboards/data/cleaning_log.txt</code>.</p>
-  <p><b>Prices</b> are list prices from the 2026-03-31 snapshot and may have changed since. Reasoning models often emit more tokens, so real bills can run higher.</p>
+  <p><b>Data.</b> LLM Price-Performance Tracker (Kaggle), 453 model endpoints, scrape of 2026-03-31. Scores are the Artificial Analysis indexes in the dataset (columns aa_intelligence_index, aa_coding_index, aa_math_index); all 453 endpoints come from the Artificial Analysis API. The tracker reports only a release year, so time views group models by release year. 138 models have no price and 161 have no year; each view says what it leaves out. Nothing is imputed. Cleaning steps: <code>dashboards/data/cleaning_log.txt</code>.</p>
+  <p><b>Prices</b> are API prices from the 2026-03-31 snapshot and may have changed since. Reasoning models often emit more tokens, so real bills can run higher.</p>
 </footer>
 </main>
 <script>// https://d3js.org v7.9.0 Copyright 2010-2023 Mike Bostock
@@ -643,9 +670,39 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     };
   };
 
+  /* ---------- shared wording: every view defines score, price, bill and time the same way ---------- */
+  C.SNAP = "2026-03-31";
+  C.DEFS = {
+    score: (task) => ({
+      general: "Score = the Artificial Analysis Intelligence Index v4.0, a composite of 10 evaluations on a 0–100 scale; higher is better.",
+      coding: "Score = the Artificial Analysis Coding Index, a composite of coding benchmarks; higher is better.",
+      math: "Score = the Artificial Analysis Math Index, a composite of math benchmarks; higher is better.",
+    })[task],
+    price: "Price = API price per 1M tokens, blended at 75% input and 25% output.",
+    bill: "Monthly bill = tokens per month × API price per 1M tokens, at 75% input and 25% output. Light = 10M, medium = 100M, heavy = 1B tokens a month.",
+    year: "Year = release year; the tracker has no exact dates.",
+    snap: `Prices and scores are from the ${C.SNAP} snapshot.`,
+  };
+  C.defs = (kinds, task) => kinds.map((k) => (typeof C.DEFS[k] === "function" ? C.DEFS[k](task) : C.DEFS[k])).join(" ");
+  // cheapest paid model of a release year that scores at least thr in a task
+  C.cheapestAt = (task, year, thr) => {
+    const ms = C.models.filter((m) => m.year === year && m.price > 0 && m[task] != null && m[task] >= thr);
+    return ms.length ? ms.reduce((a, b) => (b.price < a.price ? b : a)) : null;
+  };
+  // score bands for the price-by-score view (each task's own scale; last band is open-ended)
+  C.EDGES = { general: [0, 10, 20, 30, 40, 50], coding: [0, 10, 20, 30, 40, 50], math: [0, 20, 40, 60, 80] };
+  C.bandsFor = (task, data) => {
+    const e = C.EDGES[task];
+    const bands = e.map((lo, i) => ({ i, lo, hi: i + 1 < e.length ? e[i + 1] : Infinity, ms: [] }));
+    bands.forEach((b) => { b.label = b.hi === Infinity ? `${b.lo}+` : `${b.lo}–${b.hi}`; });
+    data.forEach((d) => { let k = 0; while (k + 1 < e.length && d[task] >= e[k + 1]) k++; bands[k].ms.push(d); });
+    bands.forEach((b) => { b.ms.sort((p, q) => p.price - q.price); b.med = d3.median(b.ms, (d) => d.price); b.q1 = d3.quantile(b.ms.map((d) => d.price), 0.25); b.q3 = d3.quantile(b.ms.map((d) => d.price), 0.75); });
+    return bands;
+  };
+
   // Flagship of a release-year cohort = highest score (ties: cheaper) among paid models
   // with a year, a price > 0 and a score. "Matches" = LATER cohorts, cheaper, score >= pct % of
-  // the flagship's score. Free ($0) matches are counted separately: $0 is a list price, not a bill.
+  // the flagship's score. Free ($0) matches are counted separately: $0 is an API price, not a bill.
   C.flagships = (task, pct) =>
     C.COHORTS.map((year) => {
       const pool = C.models.filter((m) => m.year === year && m.price > 0 && m[task] != null);
@@ -771,7 +828,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
         if (s.region) {
           const rx = Math.max(x(Math.min(Math.max(s.region.price, PRICE_DOMAIN[0]), PRICE_DOMAIN[1])), freeW + gap);
           region.style("display", null).attr("x", 0).attr("y", 0).attr("width", rx).attr("height", Math.max(y(s.region.score), 0));
-          regionLab.style("display", null).attr("x", 4).attr("y", 12).text("cheaper and still matches");
+          regionLab.style("display", null).attr("x", 4).attr("y", 12).text(`later, cheaper, score ≥ ${s.region.score.toFixed(1)}`);
         } else { region.style("display", "none"); regionLab.style("display", "none"); }
         const ringed = [];
         const sel = s.selectedId && data.find((q) => q.id === s.selectedId); if (sel) ringed.push({ d: sel, big: true });
@@ -810,8 +867,8 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
       row.append("rect").attr("class", "hit").attr("x", -m.l).attr("width", o.w).attr("y", 0).attr("height", rowH);
       row.append("circle").attr("cx", -m.l + 8).attr("cy", rowH / 2).attr("r", 4.5).attr("class", (q) => "dot " + (q.d.open ? "open" : "prop"));
       row.append("text").attr("class", "nm").attr("x", -m.l + 18).attr("y", rowH / 2).attr("dy", "0.33em").text((q) => (s.below && s.below.has(q.d.id) ? "▾ " : "") + C.trunc(q.d.name, 30));
-      // free rows: no bar, an explicit label (a $0 list price is not a $0 bill: you host it)
-      row.filter((q) => q.d.free).append("text").attr("class", "val").attr("x", 4).attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-secondary)").text("free list price · you host it");
+      // free rows: no bar, an explicit label (a $0 price is not a $0 bill: you host it)
+      row.filter((q) => q.d.free).append("text").attr("class", "val").attr("x", 4).attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-secondary)").text("free API price · you host it");
       row.filter((q) => !q.d.free).each(function (q) {
         const r = d3.select(this), h = rowH - 9, y0 = 4.5;
         const wIn = x(q.b.inp), wOut = x(q.b.out);
@@ -860,7 +917,8 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
           col.append("circle").attr("cx", cx).attr("cy", cy).attr("r", 6).attr("class", "hollow " + (c.open ? "open" : "prop"));
           col.append("text").attr("class", "mult halo").attr("x", cx + 24).attr("y", (fy + cy) / 2).attr("dy", "0.33em").text(`${k >= 10 ? k.toFixed(0) : k.toFixed(1)}× cheaper`);
           col.append("text").attr("class", "halo").attr("x", cx + 12).attr("y", cy + 14).text(C.fmtUSD(c.price));
-          lab.append("tspan").attr("x", cx).attr("dy", "1.3em").style("fill", "var(--text-muted)").text(`${r.later.length} cheaper later model${r.later.length > 1 ? "s match" : " matches"}${r.free.length ? ` (${r.free.length} free)` : ""}`);
+          lab.append("tspan").attr("x", cx).attr("dy", "1.3em").style("fill", "var(--text-muted)").text(`${r.later.length} cheaper later model${r.later.length > 1 ? "s match" : " matches"}`);
+          if (r.free.length) lab.append("tspan").attr("x", cx).attr("dy", "1.3em").style("fill", "var(--text-muted)").text(`(${r.free.length} of them free)`);
           lab.append("tspan").attr("x", cx).attr("dy", "1.3em").text(`○ ${C.trunc(c.name, 24)}`);
         } else {
           col.append("text").attr("class", "halo").attr("x", cx + 14).attr("y", fy).attr("dy", "0.33em").style("fill", "var(--text-muted)").text(last ? "latest year:" : "no cheaper");
@@ -1088,6 +1146,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
   const usd = (v) => C.fmtUSD(v);
   const bill = (v) => "$" + v.toFixed(2);
 
+  $("def-best").textContent = C.TASKS.map((t) => `${C.best(t.key)} (${t.short})`).join(", ");
   $("hero-h1").innerHTML = `Language models that match 2024's best now cost <em>up to ${H.ratio}× less.</em>`;
   function hookLine() {
     const t = C.taskOf(S.task), r = C.flagships(S.task, S.pct).find((q) => q.year === 2024);
@@ -1096,7 +1155,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     $("hook-line").innerHTML = `In the March 2026 snapshot, <b>${c.name}</b> scores ${c[S.task]} on ${t.short} at <b>${usd(c.price)}</b> per million tokens. The best paid 2024 model, <b>${f.name}</b>, scores ${f[S.task]} at <b>${usd(f.price)}</b>. That is <b>${k >= 10 ? k.toFixed(0) : k.toFixed(1)}× cheaper</b>${c[S.task] >= f[S.task] ? " for an equal or higher score" : ` for at least ${S.pct}% of its score`}.`;
   }
   // hero: a poster made of the data. Every paid model with a general score is one thin stroke rising from the
-  // baseline to its list price (log), placed in its release-year column. The ink line is the cheapest paid model
+  // baseline to its API price (log), placed in its release-year column. The ink line is the cheapest paid model
   // scoring at least the 2024 best model's score (a16z "LLMflation" style), drawn through the real dots.
   $("hero-ratio").textContent = `${H.ratio}×`;
   const heroSub = `cheaper, for the same score.<br><b>${H.old.name}</b>, 2024: ${usd(H.old.price)} per million tokens.<br><b>${H.new.name}</b>, 2026: ${usd(H.new.price)}.`;
@@ -1106,7 +1165,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     const pts = DATA.models.filter((m) => m.price > 0 && !m.free && m.general != null && C.COHORTS.includes(m.year));
     const thr = H.old.score;
     const steps = C.COHORTS.map((y) => ({ year: y, m: d3.least(pts.filter((m) => m.year <= y && m.general >= thr), (m) => m.price) }));
-    $("hero-cap").innerHTML = `<b>Move your mouse along the line to travel in time.</b><br>Each stroke is one of ${pts.length} paid models, rising to its list price per million tokens (log scale), in its release-year column; darker strokes score at least ${thr}, ${H.old.name}'s general score. The ink line is the cheapest of those. The data has release years only, so placement inside a year is arbitrary.`;
+    $("hero-cap").innerHTML = `<b>Move your mouse along the line to travel in time.</b><br>Each stroke is one of ${pts.length} paid models, rising to its API price per million tokens (log scale), in its release-year column; darker strokes score at least ${thr}, ${H.old.name}'s general score. The ink line is the cheapest of those. The data has release years only, so placement inside a year is arbitrary.`;
     // deterministic position inside each year's column
     const jit = (s) => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return ((h >>> 0) % 1000) / 1000; };
     const px = (m) => m.year + 0.06 + 0.88 * jit(m.id);
@@ -1236,21 +1295,34 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     $("h-pct-val").textContent = S.pct + "%";
     $("h-flag-title").textContent = `What each year's best model cost, and what matches it later · ${t.short}`;
     $("h-sc-title").textContent = `All models: price vs. score · ${t.short}`;
-    $("h-flag-hint").textContent = "Each column is a release year. The black dot is that year's best paid model. The open circle is the cheapest model released later that still matches its score, and the line is the saving. Click a column to see these models in the chart below.";
+    $("h-flag-hint").textContent = "Each column is a release year. Black dot: that year's best paid model. Open circle: the cheapest later model that matches its score. Line: the saving. Click a column to show these models on the right.";
     hookLine();
     flags.update({ task: S.task, pct: S.pct, selectedYear: S.year });
     const r = row();
     const focus = r && r.flag ? new Set([r.flag.id, ...r.later.map((m) => m.id)]) : null;
     sc.update({ pct: S.pct, tokens: 0, pass: () => true, focusIds: focus, selectedId: r && r.flag ? r.flag.id : null,
       region: r && r.flag ? { price: r.flag.price, score: (S.pct / 100) * r.flag[S.task] } : null });
-    $("h-sc-hint").textContent = r && r.flag ? `Each dot is a model: further right costs more, higher scores better. Ringed: ${r.flag.name}, best of ${S.year} (score ${r.flag[S.task]}, ${usd(r.flag.price)}). The shaded box holds the ${r.later.length} later models that are cheaper and score at least ${S.pct}% of that. The rest fade.` : "Each dot is a model: further right costs more, higher scores better. Click a column on the left to focus on one year.";
-    const c = C.coverage(S.task); $("h-cov").textContent = c.text;
+    $("h-sc-hint").textContent = r && r.flag ? `Each dot is a model: further right costs more, higher scores are better. Ringed: ${r.flag.name}, best of ${S.year} (score ${r.flag[S.task]}, ${usd(r.flag.price)}). Box: the ${r.later.length} later models that are cheaper and score at least ${S.pct}% of that score. The rest fade.` : "Each dot is a model: further right costs more, higher scores are better. Click a column on the left to focus on one year.";
+    const c = C.coverage(S.task); $("h-cov").textContent = c.text + " " + C.defs(["score", "price", "year", "snap"], S.task);
   }
   render();
 
   // main message
   $("msg-line").innerHTML = `On the general index, the cheapest paid model that reaches 80% of the best score (<b>${M.cheap_model}</b>) costs <b>${(M.price_ratio * 100).toFixed(0)}%</b> of the top model's price (<b>${M.top_model}</b>): <b>${bill(M.cheap_bill)}</b> against <b>${bill(M.top_bill)}</b> a month at 100M tokens.`;
   const T = STATS.tasks, sp = STATS.speed, sh = STATS.shu;
+  // the three points (cards A, B, C of "Rising insights"), each computed with the same helpers as its chart
+  (function () {
+    const u3 = (v) => "$" + (v >= 1 ? v.toFixed(2) : String(+v.toPrecision(3))), thr = C.thr("general", 80), pc = (r) => (r >= 0.1 ? Math.round(r * 100) : (r * 100).toFixed(1)) + "%";
+    const y25 = C.cheapestAt("general", 2025, thr), y26 = C.cheapestAt("general", 2026, thr), y24 = C.cheapestAt("general", 2024, thr);
+    const time = y25 && y26
+      ? `For a General score of ${thr.toFixed(1)} or more (80% of the best), the cheapest paid model costs ${u3(y25.price)} for 2025 releases and ${u3(y26.price)} for 2026 releases, <b>${(y25.price / y26.price).toFixed(0)}× less</b>${y24 ? "" : "; no 2024 release reaches that score"}.`
+      : "The cheapest price for a given score differs by release year.";
+    const gp = C.models.filter((m) => m.general != null && m.price > 0), bands = C.bandsFor("general", gp).filter((b) => b.ms.length);
+    const f = bands[0], l = bands[bands.length - 1], wide = bands.filter((b) => b.ms.length >= 10).map((b) => ({ b, r: b.q3 / b.q1 })).sort((p, q) => q.r - p.r)[0];
+    const score = `The median price rises from ${usd(f.med)} in the ${f.label} score band to ${usd(l.med)} in the ${l.label} band, but prices inside one band still differ widely (in the ${wide.b.label} band the middle half of the models spans <b>${wide.r.toFixed(1)}×</b>).`;
+    const bill = `At 100M tokens a month the cheapest good-enough model costs <b>${pc(T.general.price_ratio)}</b> of the top model's bill in General, <b>${pc(T.coding.price_ratio)}</b> in Coding and <b>${pc(T.math.price_ratio)}</b> in Math. The share is the same at every usage level; the dollar gap grows with usage.`;
+    $("msg-points").innerHTML = [["A · Over time", time], ["B · Score and price", score], ["C · Monthly bill", bill]].map(([t, x]) => `<li><b class="tag">${t}</b> ${x}</li>`).join("");
+  })();
   const cards = [
     [`${H.ratio}×`, `${H.old.name} (best paid model of 2024, score ${H.old.score}) vs ${H.new.name} (score ${H.new.score})`],
     [`${Math.round(T.general.share_of_top_score * 100)}%`, `of the top general score, from ${T.general.cheapest_model}, at ${Math.round(T.general.price_ratio * 100)}% of the price`],
@@ -1297,7 +1369,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
       a.onclick = (ev) => { ev.preventDefault(); f.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); };
     });
   })();
-  $("msg-cov").textContent = `Based on ${cov.n_general_paid} paid models with a general score (${cov.n_coding_paid} for coding, ${cov.n_math_paid} for math). ${cov.n_no_price} of ${cov.n_models} models have no price and ${cov.n_free} are free; neither group is counted in price ratios. Only 6 models score above 50, so the top end is thin. List prices only; reasoning models often use more tokens, so real bills can be higher.`;
+  $("msg-cov").textContent = `Based on ${cov.n_general_paid} paid models with a general score (${cov.n_coding_paid} for coding, ${cov.n_math_paid} for math). ${cov.n_no_price} of ${cov.n_models} models have no price and ${cov.n_free} are free; neither group is counted in price ratios. Score = the Artificial Analysis Intelligence Index v4.0 (General), Coding Index or Math Index; higher is better. ${C.defs(["bill", "snap"])} Only 6 models score above 50, so the top end is thin. Prices are API prices at collection time; reasoning models often use more tokens, so real bills can be higher.`;
 })();
 </script>
 <script>/* Rising insight 1: price by score band. Dots = paid models, bar = median, shaded = middle half.
@@ -1306,7 +1378,6 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
   const $ = (id) => document.getElementById(id);
   const S = { task: "general", lic: "all", band: null };
   // band edges on each task's own score scale (last band is open-ended)
-  const EDGES = { general: [0, 10, 20, 30, 40, 50], coding: [0, 10, 20, 30, 40, 50], math: [0, 20, 40, 60, 80] };
   const hash = (s) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); };
   const usd = (v) => C.fmtUSD(v);
 
@@ -1331,14 +1402,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
   const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`);
   const y = d3.scaleLog().domain([pmin / 1.6, pmax * 1.6]).range([ih, 0]);
 
-  function bandsFor(data) {
-    const e = EDGES[S.task];
-    const bands = e.map((lo, i) => ({ i, lo, hi: i + 1 < e.length ? e[i + 1] : Infinity, ms: [] }));
-    bands.forEach((b) => { b.label = b.hi === Infinity ? `${b.lo}+` : `${b.lo}–${b.hi}`; });
-    data.forEach((d) => { let k = 0; while (k + 1 < e.length && d[S.task] >= e[k + 1]) k++; bands[k].ms.push(d); });
-    bands.forEach((b) => { b.ms.sort((p, q) => p.price - q.price); b.med = d3.median(b.ms, (d) => d.price); b.q1 = d3.quantile(b.ms.map((d) => d.price), 0.25); b.q3 = d3.quantile(b.ms.map((d) => d.price), 0.75); });
-    return bands;
-  }
+  const bandsFor = (data) => C.bandsFor(S.task, data);
 
   function draw() {
     const t = C.taskOf(S.task);
@@ -1350,7 +1414,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     const bw = x.bandwidth();
 
     $("i1-title").textContent = `What does each step up in score cost? · ${t.short}`;
-    $("i1-hint").textContent = "Each dot is one paid model. Models are grouped by score. The black bar is the group's median price and the shaded block covers the middle half of its models. Click a band for its cheapest and most expensive model.";
+    $("i1-hint").textContent = "Each dot is one paid model, grouped by score. Black bar: the group's median price. Shaded block: the middle half of its models. Click a band to see its cheapest and most expensive model.";
 
     // takeaway: only statements the numbers support
     const used = bands.filter((b) => b.ms.length);
@@ -1395,7 +1459,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
       : (sb ? `No models in the ${sb.label} band with these settings.` : "");
 
     const cv = C.coverage(S.task);
-    $("i1-cov").textContent = `${cv.plotted - cv.free} paid models with a ${t.index} are in the bands. Left out: ${cv.noScore} with no ${t.index}, ${cv.noPrice} scored but with no listed price, ${cv.free} free ($0 cannot sit on a log axis).` + (S.lic !== "all" ? ` License filter: showing ${data.length} ${S.lic === "open" ? "open-weight" : "proprietary"} models.` : "");
+    $("i1-cov").textContent = `${cv.plotted - cv.free} paid models with ${/^[AEIOU]/i.test(t.index) ? "an" : "a"} ${t.index} are in the bands. Left out: ${cv.noScore} with no ${t.index}, ${cv.noPrice} scored but with no listed price, ${cv.free} free ($0 cannot sit on a log axis).` + " " + C.defs(["score", "price", "snap"], S.task) + (S.lic !== "all" ? ` License filter: showing ${data.length} ${S.lic === "open" ? "open-weight" : "proprietary"} models.` : "");
   }
   draw();
 })();
@@ -1433,7 +1497,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     const root = svg.append("g").attr("transform", `translate(${m.l},${m.t})`);
     root.append("g").attr("class", "grid").call(d3.axisBottom(x).ticks(5).tickSize(plotH).tickFormat(""));
     root.append("g").attr("class", "axis").attr("transform", `translate(0,${plotH})`).call(d3.axisBottom(x).ticks(5).tickFormat((v) => usd(v)).tickSizeOuter(0));
-    root.append("text").attr("class", "title-lab").attr("x", iw / 2).attr("y", plotH + 38).attr("text-anchor", "middle").text(`monthly bill at ${C.fmtTok(tok)} tokens, list prices (USD) →`);
+    root.append("text").attr("class", "title-lab").attr("x", iw / 2).attr("y", plotH + 38).attr("text-anchor", "middle").text(`monthly bill at ${C.fmtTok(tok)} tokens, API prices (USD) →`);
 
     groups.forEach((g, gi) => {
       const t = C.taskOf(g.task), y0 = gi * (gH + gap);
@@ -1457,8 +1521,13 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
       });
     });
 
+    const pc = (r) => (r >= 0.1 ? Math.round(r * 100) : (r * 100).toFixed(1)) + "%";
+    const shares = groups.filter((g) => g.cheap.id !== g.top.id).map((g) => `${C.taskOf(g.task).short} ${pc(C.bill(g.cheap, 1e8).total / C.bill(g.top, 1e8).total)}`);
+    const gen = groups[0], byUse = C.USAGE.map((u) => `${u.label.toLowerCase()} ${usd(C.bill(gen.cheap, u.tokens).total)} against ${usd(C.bill(gen.top, u.tokens).total)}`);
+    $("i2-take").innerHTML = `In every task the cheapest good-enough model costs a fraction of the top model's bill: ${shares.join(", ")}.` +
+      ` The share stays the same at every usage level, but the dollar gap grows with usage. In General: ${byUse.join("; ")}.`;
     const missing = C.TASKS.map((t) => `${t.short}: ${C.models.filter((d) => d[t.key] != null && d.price == null).length} scored but unpriced`).join("; ");
-    $("i2-cov").textContent = `Only models with a score and a list price above $0 are compared (${missing}). Free models are left out because a $0 list price is not a $0 bill. Bills use list prices; reasoning models often use more tokens.`;
+    $("i2-cov").textContent = `Only models with a score and an API price above $0 are compared (${missing}). Free models are left out because a $0 price is not a $0 bill. Reasoning models often use more tokens, so real bills can be higher. ${C.defs(["bill", "snap"])}`;
   }
   draw();
 })();
@@ -1552,7 +1621,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     });
 
     const noYear = priced.filter((d) => !d.year).length;
-    $("i3-cov").textContent = `${pool.length} of ${priced.length} paid models with a ${t.index} have a release year in 2024 to 2026 (${per.map((p) => `${p.yr}: ${p.total}`).join(", ")}); ${noYear} have no year and cannot be placed. 2026 has the most models, so it has more chances to contain a cheap one. Free models are left out.`;
+    $("i3-cov").textContent = `${pool.length} of ${priced.length} paid models with ${/^[AEIOU]/i.test(t.index) ? "an" : "a"} ${t.index} have a release year in 2024 to 2026 (${per.map((p) => `${p.yr}: ${p.total}`).join(", ")}); ${noYear} have no year and cannot be placed. 2026 has the most models, so it has more chances to contain a cheap one. Free models are left out. ${C.defs(["score", "price", "year", "snap"], task)}`;
   }
   draw();
 })();

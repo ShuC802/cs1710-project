@@ -4,7 +4,6 @@
   const $ = (id) => document.getElementById(id);
   const S = { task: "general", lic: "all", band: null };
   // band edges on each task's own score scale (last band is open-ended)
-  const EDGES = { general: [0, 10, 20, 30, 40, 50], coding: [0, 10, 20, 30, 40, 50], math: [0, 20, 40, 60, 80] };
   const hash = (s) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); };
   const usd = (v) => C.fmtUSD(v);
 
@@ -29,14 +28,7 @@
   const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`);
   const y = d3.scaleLog().domain([pmin / 1.6, pmax * 1.6]).range([ih, 0]);
 
-  function bandsFor(data) {
-    const e = EDGES[S.task];
-    const bands = e.map((lo, i) => ({ i, lo, hi: i + 1 < e.length ? e[i + 1] : Infinity, ms: [] }));
-    bands.forEach((b) => { b.label = b.hi === Infinity ? `${b.lo}+` : `${b.lo}–${b.hi}`; });
-    data.forEach((d) => { let k = 0; while (k + 1 < e.length && d[S.task] >= e[k + 1]) k++; bands[k].ms.push(d); });
-    bands.forEach((b) => { b.ms.sort((p, q) => p.price - q.price); b.med = d3.median(b.ms, (d) => d.price); b.q1 = d3.quantile(b.ms.map((d) => d.price), 0.25); b.q3 = d3.quantile(b.ms.map((d) => d.price), 0.75); });
-    return bands;
-  }
+  const bandsFor = (data) => C.bandsFor(S.task, data);
 
   function draw() {
     const t = C.taskOf(S.task);
@@ -48,7 +40,7 @@
     const bw = x.bandwidth();
 
     $("i1-title").textContent = `What does each step up in score cost? · ${t.short}`;
-    $("i1-hint").textContent = "Each dot is one paid model. Models are grouped by score. The black bar is the group's median price and the shaded block covers the middle half of its models. Click a band for its cheapest and most expensive model.";
+    $("i1-hint").textContent = "Each dot is one paid model, grouped by score. Black bar: the group's median price. Shaded block: the middle half of its models. Click a band to see its cheapest and most expensive model.";
 
     // takeaway: only statements the numbers support
     const used = bands.filter((b) => b.ms.length);
@@ -93,7 +85,7 @@
       : (sb ? `No models in the ${sb.label} band with these settings.` : "");
 
     const cv = C.coverage(S.task);
-    $("i1-cov").textContent = `${cv.plotted - cv.free} paid models with a ${t.index} are in the bands. Left out: ${cv.noScore} with no ${t.index}, ${cv.noPrice} scored but with no listed price, ${cv.free} free ($0 cannot sit on a log axis).` + (S.lic !== "all" ? ` License filter: showing ${data.length} ${S.lic === "open" ? "open-weight" : "proprietary"} models.` : "");
+    $("i1-cov").textContent = `${cv.plotted - cv.free} paid models with ${/^[AEIOU]/i.test(t.index) ? "an" : "a"} ${t.index} are in the bands. Left out: ${cv.noScore} with no ${t.index}, ${cv.noPrice} scored but with no listed price, ${cv.free} free ($0 cannot sit on a log axis).` + " " + C.defs(["score", "price", "snap"], S.task) + (S.lic !== "all" ? ` License filter: showing ${data.length} ${S.lic === "open" ? "open-weight" : "proprietary"} models.` : "");
   }
   draw();
 })();
@@ -131,7 +123,7 @@
     const root = svg.append("g").attr("transform", `translate(${m.l},${m.t})`);
     root.append("g").attr("class", "grid").call(d3.axisBottom(x).ticks(5).tickSize(plotH).tickFormat(""));
     root.append("g").attr("class", "axis").attr("transform", `translate(0,${plotH})`).call(d3.axisBottom(x).ticks(5).tickFormat((v) => usd(v)).tickSizeOuter(0));
-    root.append("text").attr("class", "title-lab").attr("x", iw / 2).attr("y", plotH + 38).attr("text-anchor", "middle").text(`monthly bill at ${C.fmtTok(tok)} tokens, list prices (USD) →`);
+    root.append("text").attr("class", "title-lab").attr("x", iw / 2).attr("y", plotH + 38).attr("text-anchor", "middle").text(`monthly bill at ${C.fmtTok(tok)} tokens, API prices (USD) →`);
 
     groups.forEach((g, gi) => {
       const t = C.taskOf(g.task), y0 = gi * (gH + gap);
@@ -155,8 +147,13 @@
       });
     });
 
+    const pc = (r) => (r >= 0.1 ? Math.round(r * 100) : (r * 100).toFixed(1)) + "%";
+    const shares = groups.filter((g) => g.cheap.id !== g.top.id).map((g) => `${C.taskOf(g.task).short} ${pc(C.bill(g.cheap, 1e8).total / C.bill(g.top, 1e8).total)}`);
+    const gen = groups[0], byUse = C.USAGE.map((u) => `${u.label.toLowerCase()} ${usd(C.bill(gen.cheap, u.tokens).total)} against ${usd(C.bill(gen.top, u.tokens).total)}`);
+    $("i2-take").innerHTML = `In every task the cheapest good-enough model costs a fraction of the top model's bill: ${shares.join(", ")}.` +
+      ` The share stays the same at every usage level, but the dollar gap grows with usage. In General: ${byUse.join("; ")}.`;
     const missing = C.TASKS.map((t) => `${t.short}: ${C.models.filter((d) => d[t.key] != null && d.price == null).length} scored but unpriced`).join("; ");
-    $("i2-cov").textContent = `Only models with a score and a list price above $0 are compared (${missing}). Free models are left out because a $0 list price is not a $0 bill. Bills use list prices; reasoning models often use more tokens.`;
+    $("i2-cov").textContent = `Only models with a score and an API price above $0 are compared (${missing}). Free models are left out because a $0 price is not a $0 bill. Reasoning models often use more tokens, so real bills can be higher. ${C.defs(["bill", "snap"])}`;
   }
   draw();
 })();
@@ -250,7 +247,7 @@
     });
 
     const noYear = priced.filter((d) => !d.year).length;
-    $("i3-cov").textContent = `${pool.length} of ${priced.length} paid models with a ${t.index} have a release year in 2024 to 2026 (${per.map((p) => `${p.yr}: ${p.total}`).join(", ")}); ${noYear} have no year and cannot be placed. 2026 has the most models, so it has more chances to contain a cheap one. Free models are left out.`;
+    $("i3-cov").textContent = `${pool.length} of ${priced.length} paid models with ${/^[AEIOU]/i.test(t.index) ? "an" : "a"} ${t.index} have a release year in 2024 to 2026 (${per.map((p) => `${p.yr}: ${p.total}`).join(", ")}); ${noYear} have no year and cannot be placed. 2026 has the most models, so it has more chances to contain a cheap one. Free models are left out. ${C.defs(["score", "price", "year", "snap"], task)}`;
   }
   draw();
 })();

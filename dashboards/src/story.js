@@ -6,6 +6,7 @@
   const usd = (v) => C.fmtUSD(v);
   const bill = (v) => "$" + v.toFixed(2);
 
+  $("def-best").textContent = C.TASKS.map((t) => `${C.best(t.key)} (${t.short})`).join(", ");
   $("hero-h1").innerHTML = `Language models that match 2024's best now cost <em>up to ${H.ratio}× less.</em>`;
   function hookLine() {
     const t = C.taskOf(S.task), r = C.flagships(S.task, S.pct).find((q) => q.year === 2024);
@@ -14,7 +15,7 @@
     $("hook-line").innerHTML = `In the March 2026 snapshot, <b>${c.name}</b> scores ${c[S.task]} on ${t.short} at <b>${usd(c.price)}</b> per million tokens. The best paid 2024 model, <b>${f.name}</b>, scores ${f[S.task]} at <b>${usd(f.price)}</b>. That is <b>${k >= 10 ? k.toFixed(0) : k.toFixed(1)}× cheaper</b>${c[S.task] >= f[S.task] ? " for an equal or higher score" : ` for at least ${S.pct}% of its score`}.`;
   }
   // hero: a poster made of the data. Every paid model with a general score is one thin stroke rising from the
-  // baseline to its list price (log), placed in its release-year column. The ink line is the cheapest paid model
+  // baseline to its API price (log), placed in its release-year column. The ink line is the cheapest paid model
   // scoring at least the 2024 best model's score (a16z "LLMflation" style), drawn through the real dots.
   $("hero-ratio").textContent = `${H.ratio}×`;
   const heroSub = `cheaper, for the same score.<br><b>${H.old.name}</b>, 2024: ${usd(H.old.price)} per million tokens.<br><b>${H.new.name}</b>, 2026: ${usd(H.new.price)}.`;
@@ -24,7 +25,7 @@
     const pts = DATA.models.filter((m) => m.price > 0 && !m.free && m.general != null && C.COHORTS.includes(m.year));
     const thr = H.old.score;
     const steps = C.COHORTS.map((y) => ({ year: y, m: d3.least(pts.filter((m) => m.year <= y && m.general >= thr), (m) => m.price) }));
-    $("hero-cap").innerHTML = `<b>Move your mouse along the line to travel in time.</b><br>Each stroke is one of ${pts.length} paid models, rising to its list price per million tokens (log scale), in its release-year column; darker strokes score at least ${thr}, ${H.old.name}'s general score. The ink line is the cheapest of those. The data has release years only, so placement inside a year is arbitrary.`;
+    $("hero-cap").innerHTML = `<b>Move your mouse along the line to travel in time.</b><br>Each stroke is one of ${pts.length} paid models, rising to its API price per million tokens (log scale), in its release-year column; darker strokes score at least ${thr}, ${H.old.name}'s general score. The ink line is the cheapest of those. The data has release years only, so placement inside a year is arbitrary.`;
     // deterministic position inside each year's column
     const jit = (s) => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return ((h >>> 0) % 1000) / 1000; };
     const px = (m) => m.year + 0.06 + 0.88 * jit(m.id);
@@ -154,21 +155,34 @@
     $("h-pct-val").textContent = S.pct + "%";
     $("h-flag-title").textContent = `What each year's best model cost, and what matches it later · ${t.short}`;
     $("h-sc-title").textContent = `All models: price vs. score · ${t.short}`;
-    $("h-flag-hint").textContent = "Each column is a release year. The black dot is that year's best paid model. The open circle is the cheapest model released later that still matches its score, and the line is the saving. Click a column to see these models in the chart below.";
+    $("h-flag-hint").textContent = "Each column is a release year. Black dot: that year's best paid model. Open circle: the cheapest later model that matches its score. Line: the saving. Click a column to show these models on the right.";
     hookLine();
     flags.update({ task: S.task, pct: S.pct, selectedYear: S.year });
     const r = row();
     const focus = r && r.flag ? new Set([r.flag.id, ...r.later.map((m) => m.id)]) : null;
     sc.update({ pct: S.pct, tokens: 0, pass: () => true, focusIds: focus, selectedId: r && r.flag ? r.flag.id : null,
       region: r && r.flag ? { price: r.flag.price, score: (S.pct / 100) * r.flag[S.task] } : null });
-    $("h-sc-hint").textContent = r && r.flag ? `Each dot is a model: further right costs more, higher scores better. Ringed: ${r.flag.name}, best of ${S.year} (score ${r.flag[S.task]}, ${usd(r.flag.price)}). The shaded box holds the ${r.later.length} later models that are cheaper and score at least ${S.pct}% of that. The rest fade.` : "Each dot is a model: further right costs more, higher scores better. Click a column on the left to focus on one year.";
-    const c = C.coverage(S.task); $("h-cov").textContent = c.text;
+    $("h-sc-hint").textContent = r && r.flag ? `Each dot is a model: further right costs more, higher scores are better. Ringed: ${r.flag.name}, best of ${S.year} (score ${r.flag[S.task]}, ${usd(r.flag.price)}). Box: the ${r.later.length} later models that are cheaper and score at least ${S.pct}% of that score. The rest fade.` : "Each dot is a model: further right costs more, higher scores are better. Click a column on the left to focus on one year.";
+    const c = C.coverage(S.task); $("h-cov").textContent = c.text + " " + C.defs(["score", "price", "year", "snap"], S.task);
   }
   render();
 
   // main message
   $("msg-line").innerHTML = `On the general index, the cheapest paid model that reaches 80% of the best score (<b>${M.cheap_model}</b>) costs <b>${(M.price_ratio * 100).toFixed(0)}%</b> of the top model's price (<b>${M.top_model}</b>): <b>${bill(M.cheap_bill)}</b> against <b>${bill(M.top_bill)}</b> a month at 100M tokens.`;
   const T = STATS.tasks, sp = STATS.speed, sh = STATS.shu;
+  // the three points (cards A, B, C of "Rising insights"), each computed with the same helpers as its chart
+  (function () {
+    const u3 = (v) => "$" + (v >= 1 ? v.toFixed(2) : String(+v.toPrecision(3))), thr = C.thr("general", 80), pc = (r) => (r >= 0.1 ? Math.round(r * 100) : (r * 100).toFixed(1)) + "%";
+    const y25 = C.cheapestAt("general", 2025, thr), y26 = C.cheapestAt("general", 2026, thr), y24 = C.cheapestAt("general", 2024, thr);
+    const time = y25 && y26
+      ? `For a General score of ${thr.toFixed(1)} or more (80% of the best), the cheapest paid model costs ${u3(y25.price)} for 2025 releases and ${u3(y26.price)} for 2026 releases, <b>${(y25.price / y26.price).toFixed(0)}× less</b>${y24 ? "" : "; no 2024 release reaches that score"}.`
+      : "The cheapest price for a given score differs by release year.";
+    const gp = C.models.filter((m) => m.general != null && m.price > 0), bands = C.bandsFor("general", gp).filter((b) => b.ms.length);
+    const f = bands[0], l = bands[bands.length - 1], wide = bands.filter((b) => b.ms.length >= 10).map((b) => ({ b, r: b.q3 / b.q1 })).sort((p, q) => q.r - p.r)[0];
+    const score = `The median price rises from ${usd(f.med)} in the ${f.label} score band to ${usd(l.med)} in the ${l.label} band, but prices inside one band still differ widely (in the ${wide.b.label} band the middle half of the models spans <b>${wide.r.toFixed(1)}×</b>).`;
+    const bill = `At 100M tokens a month the cheapest good-enough model costs <b>${pc(T.general.price_ratio)}</b> of the top model's bill in General, <b>${pc(T.coding.price_ratio)}</b> in Coding and <b>${pc(T.math.price_ratio)}</b> in Math. The share is the same at every usage level; the dollar gap grows with usage.`;
+    $("msg-points").innerHTML = [["A · Over time", time], ["B · Score and price", score], ["C · Monthly bill", bill]].map(([t, x]) => `<li><b class="tag">${t}</b> ${x}</li>`).join("");
+  })();
   const cards = [
     [`${H.ratio}×`, `${H.old.name} (best paid model of 2024, score ${H.old.score}) vs ${H.new.name} (score ${H.new.score})`],
     [`${Math.round(T.general.share_of_top_score * 100)}%`, `of the top general score, from ${T.general.cheapest_model}, at ${Math.round(T.general.price_ratio * 100)}% of the price`],
@@ -215,5 +229,5 @@
       a.onclick = (ev) => { ev.preventDefault(); f.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); };
     });
   })();
-  $("msg-cov").textContent = `Based on ${cov.n_general_paid} paid models with a general score (${cov.n_coding_paid} for coding, ${cov.n_math_paid} for math). ${cov.n_no_price} of ${cov.n_models} models have no price and ${cov.n_free} are free; neither group is counted in price ratios. Only 6 models score above 50, so the top end is thin. List prices only; reasoning models often use more tokens, so real bills can be higher.`;
+  $("msg-cov").textContent = `Based on ${cov.n_general_paid} paid models with a general score (${cov.n_coding_paid} for coding, ${cov.n_math_paid} for math). ${cov.n_no_price} of ${cov.n_models} models have no price and ${cov.n_free} are free; neither group is counted in price ratios. Score = the Artificial Analysis Intelligence Index v4.0 (General), Coding Index or Math Index; higher is better. ${C.defs(["bill", "snap"])} Only 6 models score above 50, so the top end is thin. Prices are API prices at collection time; reasoning models often use more tokens, so real bills can be higher.`;
 })();

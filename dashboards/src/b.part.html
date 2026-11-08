@@ -1,5 +1,5 @@
 <h2 class="dh">Explore by budget (Design B)</h2>
-<p class="lede">Here you start from the controls: <b>set a task, usage, quality bar, budget, license and speed floor</b>, then read the surviving models and see where they sit on the price × score map.</p>
+<p class="lede">Start from your requirements: <b>set a task, usage, quality bar, budget, license and speed floor</b>. The models that pass every control are listed with their monthly bill and shown on the price × score map.</p>
 
 <div class="controls card">
   <div class="grp"><span class="lab">Task</span><div class="seg" id="b-task"></div></div>
@@ -16,7 +16,7 @@
 <div class="layoutB">
   <section class="card"><h2 id="b-bill-title"></h2><p class="hint" id="b-bill-hint"></p><div id="b-bill"></div>
     <div class="legend"><span><i style="background:var(--open)"></i>open weights</span><span><i style="background:var(--prop)"></i>proprietary</span><span><i class="sq" style="background:var(--seg-in)"></i>input cost</span><span><i class="sq" style="background:var(--seg-out)"></i>output cost</span></div>
-    <p class="coverage">List prices; reasoning models usually emit more tokens, so real bills run higher. Free models cost $0 to license, not to host.</p></section>
+    <p class="coverage">Monthly bill = tokens per month × API price per 1M tokens, at 75% input and 25% output; API prices as of 2026-03-31. Reasoning models usually emit more tokens, so real bills run higher. Free models cost $0 to license, not to host.</p></section>
   <div style="display:grid;gap:12px">
     <section class="card"><h2 id="b-sc-title"></h2><div id="b-sc"></div>
       <p class="coverage" id="b-cov"></p>
@@ -28,7 +28,9 @@
 <details class="defs"><summary>Definitions, data coverage and caveats</summary><ul>
 <li><b>Data:</b> LLM Price-Performance Tracker (Kaggle), scrape of 2026-03-31, 453 model endpoints. Nothing is imputed; each view says how many models it leaves out.</li>
 <li><b>Good enough:</b> score ≥ X% of the best score any model has in that task (best: general 57.2, coding 57.3, math 99.0).</li>
+<li><b>Monthly bill:</b> tokens per month × API price per 1M tokens, at 75% input and 25% output; API prices as of 2026-03-31. Light, medium and heavy are 10M, 100M and 1B tokens a month.</li>
+<li><b>Score:</b> the Artificial Analysis Intelligence Index v4.0 (General), Coding Index and Math Index; higher is better.</li>
 <li><b>Budget:</b> a model passes if its monthly bill at the chosen usage is within budget. The dotted line in ② shows the same cap as a price per 1M tokens.</li>
 <li><b>Speed:</b> output tokens/second, known for most but not all priced models; with a speed floor set, models with unknown speed are dropped and counted.</li>
-<li><b>Free</b> models are open-weight with a $0 list price (you pay for hosting yourself). They always pass the budget control.</li>
+<li><b>Free</b> models are open-weight with a $0 price (you pay for hosting yourself). They always pass the budget control.</li>
 </ul></details>

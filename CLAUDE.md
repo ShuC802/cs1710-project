@@ -15,7 +15,7 @@ CS171 group project, Prototype V1 (builds on Milestone 6 dashboards): a story si
 
 ## Shared definitions (never redefine per page)
 - Good enough = score >= X% of the best score in that task (default 80%; general 57.2, coding 57.3, math 99.0 on different scales).
-- Monthly bill = usage tokens x list prices at 75% input / 25% output (dataset blended price is 3:1). Light/medium/heavy = 10M/100M/1B tokens.
+- Monthly bill = usage tokens x API prices at 75% input / 25% output (dataset blended price is 3:1). Light/medium/heavy = 10M/100M/1B tokens.
 - Flagship = best paid model per release-year cohort (2024-2026; 2023 has 7 models). Matches = later cohort, cheaper, score >= X% of flagship's. Free ($0) models are separate, never used in "x cheaper".
 - Only release YEAR exists (no dates; 161 models lack it). 138 models lack a price (mostly open-weight, lower scoring). Say what each view leaves out.
 

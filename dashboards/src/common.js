@@ -57,9 +57,39 @@
     };
   };
 
+  /* ---------- shared wording: every view defines score, price, bill and time the same way ---------- */
+  C.SNAP = "2026-03-31";
+  C.DEFS = {
+    score: (task) => ({
+      general: "Score = the Artificial Analysis Intelligence Index v4.0, a composite of 10 evaluations on a 0–100 scale; higher is better.",
+      coding: "Score = the Artificial Analysis Coding Index, a composite of coding benchmarks; higher is better.",
+      math: "Score = the Artificial Analysis Math Index, a composite of math benchmarks; higher is better.",
+    })[task],
+    price: "Price = API price per 1M tokens, blended at 75% input and 25% output.",
+    bill: "Monthly bill = tokens per month × API price per 1M tokens, at 75% input and 25% output. Light = 10M, medium = 100M, heavy = 1B tokens a month.",
+    year: "Year = release year; the tracker has no exact dates.",
+    snap: `Prices and scores are from the ${C.SNAP} snapshot.`,
+  };
+  C.defs = (kinds, task) => kinds.map((k) => (typeof C.DEFS[k] === "function" ? C.DEFS[k](task) : C.DEFS[k])).join(" ");
+  // cheapest paid model of a release year that scores at least thr in a task
+  C.cheapestAt = (task, year, thr) => {
+    const ms = C.models.filter((m) => m.year === year && m.price > 0 && m[task] != null && m[task] >= thr);
+    return ms.length ? ms.reduce((a, b) => (b.price < a.price ? b : a)) : null;
+  };
+  // score bands for the price-by-score view (each task's own scale; last band is open-ended)
+  C.EDGES = { general: [0, 10, 20, 30, 40, 50], coding: [0, 10, 20, 30, 40, 50], math: [0, 20, 40, 60, 80] };
+  C.bandsFor = (task, data) => {
+    const e = C.EDGES[task];
+    const bands = e.map((lo, i) => ({ i, lo, hi: i + 1 < e.length ? e[i + 1] : Infinity, ms: [] }));
+    bands.forEach((b) => { b.label = b.hi === Infinity ? `${b.lo}+` : `${b.lo}–${b.hi}`; });
+    data.forEach((d) => { let k = 0; while (k + 1 < e.length && d[task] >= e[k + 1]) k++; bands[k].ms.push(d); });
+    bands.forEach((b) => { b.ms.sort((p, q) => p.price - q.price); b.med = d3.median(b.ms, (d) => d.price); b.q1 = d3.quantile(b.ms.map((d) => d.price), 0.25); b.q3 = d3.quantile(b.ms.map((d) => d.price), 0.75); });
+    return bands;
+  };
+
   // Flagship of a release-year cohort = highest score (ties: cheaper) among paid models
   // with a year, a price > 0 and a score. "Matches" = LATER cohorts, cheaper, score >= pct % of
-  // the flagship's score. Free ($0) matches are counted separately: $0 is a list price, not a bill.
+  // the flagship's score. Free ($0) matches are counted separately: $0 is an API price, not a bill.
   C.flagships = (task, pct) =>
     C.COHORTS.map((year) => {
       const pool = C.models.filter((m) => m.year === year && m.price > 0 && m[task] != null);
@@ -185,7 +215,7 @@
         if (s.region) {
           const rx = Math.max(x(Math.min(Math.max(s.region.price, PRICE_DOMAIN[0]), PRICE_DOMAIN[1])), freeW + gap);
           region.style("display", null).attr("x", 0).attr("y", 0).attr("width", rx).attr("height", Math.max(y(s.region.score), 0));
-          regionLab.style("display", null).attr("x", 4).attr("y", 12).text("cheaper and still matches");
+          regionLab.style("display", null).attr("x", 4).attr("y", 12).text(`later, cheaper, score ≥ ${s.region.score.toFixed(1)}`);
         } else { region.style("display", "none"); regionLab.style("display", "none"); }
         const ringed = [];
         const sel = s.selectedId && data.find((q) => q.id === s.selectedId); if (sel) ringed.push({ d: sel, big: true });
@@ -224,8 +254,8 @@
       row.append("rect").attr("class", "hit").attr("x", -m.l).attr("width", o.w).attr("y", 0).attr("height", rowH);
       row.append("circle").attr("cx", -m.l + 8).attr("cy", rowH / 2).attr("r", 4.5).attr("class", (q) => "dot " + (q.d.open ? "open" : "prop"));
       row.append("text").attr("class", "nm").attr("x", -m.l + 18).attr("y", rowH / 2).attr("dy", "0.33em").text((q) => (s.below && s.below.has(q.d.id) ? "▾ " : "") + C.trunc(q.d.name, 30));
-      // free rows: no bar, an explicit label (a $0 list price is not a $0 bill: you host it)
-      row.filter((q) => q.d.free).append("text").attr("class", "val").attr("x", 4).attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-secondary)").text("free list price · you host it");
+      // free rows: no bar, an explicit label (a $0 price is not a $0 bill: you host it)
+      row.filter((q) => q.d.free).append("text").attr("class", "val").attr("x", 4).attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-secondary)").text("free API price · you host it");
       row.filter((q) => !q.d.free).each(function (q) {
         const r = d3.select(this), h = rowH - 9, y0 = 4.5;
         const wIn = x(q.b.inp), wOut = x(q.b.out);
@@ -274,7 +304,8 @@
           col.append("circle").attr("cx", cx).attr("cy", cy).attr("r", 6).attr("class", "hollow " + (c.open ? "open" : "prop"));
           col.append("text").attr("class", "mult halo").attr("x", cx + 24).attr("y", (fy + cy) / 2).attr("dy", "0.33em").text(`${k >= 10 ? k.toFixed(0) : k.toFixed(1)}× cheaper`);
           col.append("text").attr("class", "halo").attr("x", cx + 12).attr("y", cy + 14).text(C.fmtUSD(c.price));
-          lab.append("tspan").attr("x", cx).attr("dy", "1.3em").style("fill", "var(--text-muted)").text(`${r.later.length} cheaper later model${r.later.length > 1 ? "s match" : " matches"}${r.free.length ? ` (${r.free.length} free)` : ""}`);
+          lab.append("tspan").attr("x", cx).attr("dy", "1.3em").style("fill", "var(--text-muted)").text(`${r.later.length} cheaper later model${r.later.length > 1 ? "s match" : " matches"}`);
+          if (r.free.length) lab.append("tspan").attr("x", cx).attr("dy", "1.3em").style("fill", "var(--text-muted)").text(`(${r.free.length} of them free)`);
           lab.append("tspan").attr("x", cx).attr("dy", "1.3em").text(`○ ${C.trunc(c.name, 24)}`);
         } else {
           col.append("text").attr("class", "halo").attr("x", cx + 14).attr("y", fy).attr("dy", "0.33em").style("fill", "var(--text-muted)").text(last ? "latest year:" : "no cheaper");
