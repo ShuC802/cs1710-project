@@ -153,6 +153,17 @@ details.defs li { margin: 3px 0; }
 
 .halo { paint-order: stroke; stroke: var(--surface-1); stroke-width: 3px; stroke-linejoin: round; }
 
+/* folded notes: the summary line stays short, the detail opens on demand */
+details.fold { margin: 8px 0 0; font-size: 12.5px; color: var(--text-muted); }
+details.fold > summary { cursor: pointer; font-style: italic; width: fit-content; }
+details.fold > summary:hover { color: var(--text-primary); }
+details.fold[open] > summary { color: var(--text-primary); }
+details.fold .coverage, details.fold .explain { margin: 6px 0 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+svg [tabindex]:focus { outline: none; }
+svg [tabindex]:focus-visible .focus-ring, svg circle[tabindex]:focus-visible { stroke: var(--ring); stroke-width: 3px; }
+.bill-row:focus-visible .hit, .bill-row:focus .hit { stroke: var(--accent); stroke-width: 1.5; fill: var(--hl-bg); }
+
 html { scroll-behavior: smooth; scroll-padding-top: 60px; }
 .hero { min-height: calc(100vh - 52px); box-sizing: border-box; display: flex; flex-direction: column; }
 section.story { padding: 120px 0 40px; }
@@ -260,6 +271,8 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 .points { display: grid; gap: 8px; margin: 12px 0 18px; padding: 0; list-style: none; }
 .points li { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 14.5px; }
 .points li b.tag { display: inline-block; margin: 0 0 4px; padding: 0; border: 0; }
+.linkbtn { font: inherit; background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; cursor: pointer; }
+#c-model { font: 14px var(--sans); padding: 5px 8px; background: var(--surface-1); color: var(--text-primary); border: 1px solid var(--border); border-radius: 3px; width: 100%; }
 </style></head>
 <body><main>
 <nav class="top"><b>The Evolution of LLM Value</b><a href="#hook">1 Hook</a><a href="#insights">2 Rising insights</a><a href="#message">3 Main message</a><a href="#explore">4 Explore</a><a href="#about">About the data</a><span id="progress" aria-hidden="true"></span></nav>
@@ -336,7 +349,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     </div>
     <p class="point">A · Over time</p>
     <h2>Has the cost of a given score fallen over the release years?</h2>
-    <p class="hint">One line per release year: the cheapest paid model that reaches each score. A line that stops means no model from that year scored higher. Dashed line: the good-enough score from the slider. Dots: each year's cheapest model there.</p>
+    <p class="hint">Each line: the cheapest paid model that reaches a score, by release year. A line that stops: no model from that year scored higher.</p>
     <p class="big" style="font-size:15px;margin:2px 0 8px" id="i3-take"></p>
     <div id="i3-chart"></div>
     <p class="coverage" id="i3-cov"></p>
@@ -365,7 +378,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     </div>
     <p class="point">C · Monthly bill</p>
     <h2>How much does the top model cost next to the cheapest good-enough one?</h2>
-    <p class="hint">For each task: the top-scoring paid model and the cheapest paid model that is still good enough. Each bar is a monthly bill, on one dollar axis for all three tasks.</p>
+    <p class="hint">Each bar is a monthly bill, on one dollar axis for all three tasks.</p>
     <p class="big" style="font-size:15px;margin:2px 0 8px" id="i2-take"></p>
     <div id="i2-chart"></div>
     <div class="legend"><span><i class="sq" style="background:var(--role-top)"></i>top-scoring model in the task</span><span><i class="sq" style="background:var(--role-cheap)"></i>cheapest model that still reaches the good-enough score</span></div>
@@ -394,10 +407,11 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <section class="story" id="explore">
   <p class="step">4 · Solution</p>
   <h2>Test it on your own task and budget</h2>
-  <p class="big">The three views above hold for the whole market. Here you apply them to your own case: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? <b>Explore by performance</b> (Design A) starts from price-versus-score plots. <b>Explore by budget</b> (Design B) starts from your requirements. Both use the same definitions as above.</p>
+  <p class="big">The three views above hold for the whole market. Here you apply them to your own case: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? <b>Explore by performance</b> (Design A) starts from price-versus-score plots. <b>Explore by budget</b> (Design B) starts from your requirements. <b>Find a cheaper match</b> (Design C) starts from one model you already use. All three use the same definitions as above.</p>
   <div class="tabs" role="tablist">
     <button role="tab" id="tab-a" aria-selected="true"><b>Explore by performance</b> <span style="color:var(--text-muted)">(Design A · brush &amp; link)</span></button>
     <button role="tab" id="tab-b" aria-selected="false"><b>Explore by budget</b> <span style="color:var(--text-muted)">(Design B · shared filters)</span></button>
+    <button role="tab" id="tab-c" aria-selected="false"><b>Find a cheaper match</b> <span style="color:var(--text-muted)">(Design C · one model)</span></button>
   </div>
   <div class="design" id="design-a"><h2 class="dh">Explore by performance (Design A)</h2>
 <p class="lede">Start from the scatters: <b>brush a region</b> of any task to see the monthly bill of exactly those models. Hover a bill row to find the same model in all three tasks. A shaded band above the dashed line marks the good-enough scores.</p>
@@ -470,6 +484,28 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <li><b>Speed:</b> output tokens/second, known for most but not all priced models; with a speed floor set, models with unknown speed are dropped and counted.</li>
 <li><b>Free</b> models are open-weight with a $0 price (you pay for hosting yourself). They always pass the budget control.</li>
 </ul></details>
+</div>
+  <div class="design" id="design-c" hidden><h2 class="dh">Find a cheaper match for a model (Design C)</h2>
+<p class="lede">Pick a model you use or are thinking of using. The chart shows which models score almost as well for less, and what each would cost you per month.</p>
+
+<div class="controls card">
+  <label style="min-width:230px"><span class="lab">Your model</span><input id="c-model" list="c-models" autocomplete="off" placeholder="type a model name"></label>
+  <datalist id="c-models"></datalist>
+  <div class="grp"><span class="lab">Task</span><div class="seg" id="c-task"></div></div>
+  <div class="grp"><span class="lab">Monthly usage</span><div class="seg" id="c-usage"></div></div>
+  <label class="grow"><span class="lab">A match scores at least <b id="c-pct-val"></b> of your model's score</span><input id="c-pct" type="range" min="70" max="100" step="1" value="90"></label>
+  <label><span class="lab">License</span><select id="c-lic"><option value="all">all</option><option value="open">open weights</option><option value="closed">proprietary</option></select></label>
+</div>
+<p class="hint" id="c-try" style="margin:0 0 8px"></p>
+
+<section class="card">
+  <p class="big" style="font-size:16px;margin:0 0 8px" id="c-take"></p>
+  <div id="c-chart"></div>
+  <div id="c-leg"><div class="legend"><span><i class="sq" style="background:var(--role-top)"></i>your model</span><span><i class="sq" style="background:var(--role-cheap)"></i>cheaper models that reach your quality bar (each beats the others in price or score)</span></div>
+  <p class="hint" style="margin:6px 0 0">Click a bar to compare that model instead.</p></div>
+  <p class="coverage" id="c-cov"></p>
+  <p class="explain link"><strong>Filter</strong> · the task, usage, quality bar and license controls recompute the list. <strong>Link</strong> · hovering a bar shows that model's scores, price and speed; clicking one makes it your model (nothing is removed).</p>
+</section>
 </div>
 </section>
 
@@ -930,6 +966,32 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     return { update: render };
   };
 })();
+
+/* ---------- shared UI helpers: motion, keyboard tooltip, folded notes ---------- */
+(function () {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  C.dur = (ms) => (reduce ? 0 : ms == null ? 650 : ms);
+  // show the tooltip next to a focused element (keyboard users have no mouse position)
+  C.tipFocus = (node, d, tokens, task) => {
+    const r = node.getBoundingClientRect();
+    C.tip.show(d, { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 }, tokens, task);
+  };
+  // give an svg a text description for screen readers
+  C.describe = (svgSel, label) => svgSel.attr("role", "img").attr("aria-label", label);
+  // make a mark keyboard-focusable and announce it
+  C.focusable = (sel, label, onFocus, onBlur, onKey) => sel.attr("tabindex", 0).attr("role", onKey ? "button" : "img")
+    .attr("aria-label", label).on("focus", onFocus).on("blur", onBlur || (() => C.tip.hide()))
+    .on("keydown", (ev) => { if (onKey && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); onKey(); } });
+  // fold every definitions/coverage note (and the Link/Filter line after it) into one small expandable line
+  C.fold = () => document.querySelectorAll(".coverage").forEach((el) => {
+    if (el.parentElement.classList.contains("fold")) return;
+    const d = document.createElement("details"); d.className = "fold";
+    const s = document.createElement("summary"); s.textContent = "Definitions and what is left out";
+    el.before(d); d.append(s, el);
+    const nx = d.nextElementSibling; if (nx && nx.classList.contains("explain")) d.append(nx);
+  });
+  addEventListener("load", C.fold);
+})();
 </script>
 <script>/* Design A: performance first. Brush a region in a task scatter -> the bill shows those models. */
 (function () {
@@ -1138,6 +1200,116 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
   render();
 })();
 </script>
+<script>/* Design C: find a cheaper match for one model.
+   Your model = one paid model. A match = a paid model that costs less per month AND scores at least pct% of your model's score in the chosen task.
+   Uses C (common.js); the task is shared with the other views through the "taskchange" event. */
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const usd = (v) => C.fmtUSD(v);
+  const SHOW = 6;
+  const paid = C.models.filter((m) => m.price > 0);
+  const S = { id: "o1", task: "general", usage: "medium", pct: 90, lic: "all" };
+  const PREVW = {};
+
+  const mk = (el, items, key, set) => items.forEach((it) => { const b = document.createElement("button"); b.textContent = it.label; b.dataset.k = it.key; b.onclick = () => set(it.key); el.appendChild(b); });
+  mk($("c-task"), C.TASKS, "task", (k) => { S.task = k; draw(); window.dispatchEvent(new CustomEvent("taskchange", { detail: k })); });
+  mk($("c-usage"), C.USAGE.map((u) => ({ key: u.key, label: `${u.label} · ${C.fmtTok(u.tokens)}` })), "usage", (k) => { S.usage = k; draw(); });
+  window.addEventListener("taskchange", (e) => { if (S.task !== e.detail) { S.task = e.detail; draw(); } });
+  $("c-pct").oninput = (e) => { S.pct = +e.target.value; draw(); };
+  $("c-lic").onchange = (e) => { S.lic = e.target.value; draw(); };
+
+  const dl = $("c-models");
+  paid.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach((m) => { const o = document.createElement("option"); o.value = m.name; dl.appendChild(o); });
+  const input = $("c-model");
+  const byName = (txt) => { const t = txt.trim().toLowerCase(); return paid.find((m) => m.name.toLowerCase() === t); };
+  input.onchange = () => { const m = byName(input.value); if (m) { S.id = m.id; draw(); } else { $("c-take").textContent = `"${input.value}" is not a priced model in this data. Pick a name from the list.`; } };
+  input.onfocus = () => input.select();
+
+  // quick picks: the hook's example plus the top paid model of each task
+  const picks = [C.byId.get("o1")].concat(C.TASKS.map((t) => paid.filter((m) => m[t.key] != null).sort((a, b) => b[t.key] - a[t.key] || a.price - b.price)[0])).filter((m, i, a) => m && a.indexOf(m) === i);
+  const tryEl = $("c-try"); tryEl.append("Try: ");
+  picks.forEach((m, i) => { const b = document.createElement("button"); b.className = "linkbtn"; b.textContent = m.name; b.onclick = () => { S.id = m.id; draw(); }; tryEl.append(b); if (i < picks.length - 1) tryEl.append(" · "); });
+
+  const W = 780, m = { t: 4, r: 170, b: 44, l: 240 }, rowH = 40;
+  const svg = d3.select($("c-chart")).append("svg");
+  const root = svg.append("g").attr("transform", `translate(${m.l},${m.t})`);
+
+  function draw() {
+    const t = C.taskOf(S.task), me = C.byId.get(S.id), tok = C.usageOf(S.usage).tokens;
+    input.value = me.name;
+    $("c-task").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.k === S.task));
+    $("c-usage").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.k === S.usage));
+    $("c-pct-val").textContent = S.pct + "%";
+    $("c-lic").value = S.lic;
+    const myBill = C.bill(me, tok).total;
+    const ok = me[S.task] != null;
+    const thr = ok ? (S.pct / 100) * me[S.task] : null;
+    const pool = ok ? paid.filter((d) => d.id !== me.id && d[S.task] != null && d[S.task] >= thr && C.bill(d, tok).total < myBill && (S.lic === "all" || (S.lic === "open") === d.open)) : [];
+    pool.sort((a, b) => C.bill(a, tok).total - C.bill(b, tok).total || b[S.task] - a[S.task]);
+    // keep only matches that no other match beats on both price and score, so every bar tells something new
+    const front = [];
+    pool.forEach((d) => { if (!front.length || d[S.task] > front[front.length - 1][S.task]) front.push(d); });
+    const shown = front.length <= SHOW ? front : d3.range(SHOW).map((i) => front[Math.round((i * (front.length - 1)) / (SHOW - 1))]);
+    const rows = [me].concat(shown);
+
+    // one sentence: the answer
+    let take;
+    if (!ok) take = `<b>${me.name}</b> has no ${t.index} in this data, so it cannot be compared on ${t.short}. Pick another task or another model.`;
+    else if (!pool.length) take = `No cheaper model scores at least ${thr.toFixed(1)} (${S.pct}% of ${me.name}'s ${me[S.task]}) on ${t.short}${S.lic === "all" ? "" : " with this license"}. Lower the bar to see more.`;
+    else {
+      const cheap = front[0], top = front[front.length - 1], less = (d) => Math.floor((1 - C.bill(d, tok).total / myBill) * 100);
+      take = `<b>${pool.length}</b> cheaper model${pool.length === 1 ? " scores" : "s score"} at least ${thr.toFixed(1)} on ${t.short} (${S.pct}% of ${me.name}'s ${me[S.task]}). ` +
+        `The cheapest, <b>${cheap.name}</b>, scores ${cheap[S.task]} and costs <b>${usd(C.bill(cheap, tok).total)}</b> a month instead of ${usd(myBill)} (${less(cheap)}% less).` +
+        (top.id !== cheap.id ? ` The highest score, <b>${top.name}</b>, is ${top[S.task]} at ${usd(C.bill(top, tok).total)} (${less(top)}% less).` : "");
+    }
+    $("c-take").innerHTML = take;
+
+    // chart: one bar per model on a shared monthly-bill axis
+    const iw = W - m.l - m.r, plotH = rows.length * rowH;
+    svg.attr("viewBox", `0 0 ${W} ${m.t + m.b + plotH}`);
+    const x = d3.scaleLinear().domain([0, myBill]).range([0, iw]).nice();
+    root.selectAll(".ax").remove();
+    root.append("g").attr("class", "grid ax").call(d3.axisBottom(x).ticks(5).tickSize(plotH).tickFormat(""));
+    root.append("g").attr("class", "axis ax").attr("transform", `translate(0,${plotH})`).call(d3.axisBottom(x).ticks(5).tickFormat((v) => usd(v)).tickSizeOuter(0));
+    root.append("text").attr("class", "title-lab ax").attr("x", iw / 2).attr("y", plotH + 36).attr("text-anchor", "middle").text(`monthly bill at ${C.fmtTok(tok)} tokens, API prices (USD) →`);
+    const D = C.dur();
+    const row = root.selectAll("g.crow").data(ok ? rows : [], (d) => d.id);
+    row.exit().remove();
+    const en = row.enter().append("g").attr("class", "bill-row crow").attr("transform", (d, i) => `translate(0,${i * rowH + 10})`).attr("opacity", 0);
+    en.append("rect").attr("class", "hit").attr("x", -m.l).attr("width", W).attr("height", rowH);
+    en.append("rect").attr("class", "sw").attr("x", -m.l + 4).attr("y", rowH / 2 - 5).attr("width", 10).attr("height", 10).attr("rx", 2);
+    en.append("text").attr("class", "nm").attr("x", -m.l + 20).attr("y", rowH / 2 - 5).style("fill", "var(--text-primary)").style("font-size", "12px");
+    en.append("text").attr("class", "sub").attr("x", -m.l + 20).attr("y", rowH / 2 + 9).style("fill", "var(--text-muted)").style("font-size", "11px");
+    en.append("rect").attr("class", "bar").attr("x", 0).attr("y", (rowH - 20) / 2).attr("height", 20).attr("rx", 2).attr("width", (d) => PREVW[d.id] || 1.5);
+    en.append("text").attr("class", "val").attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-primary)");
+    const all = en.merge(row);
+    all.each(function (d) {
+      const isMe = d.id === me.id, bill = C.bill(d, tok).total;
+      const g = d3.select(this);
+      const label = isMe ? `Your model: ${d.name}, ${t.short} score ${d[S.task]}, monthly bill ${usd(bill)}` : `${d.name}, ${t.short} score ${d[S.task]}, monthly bill ${usd(bill)}, ${Math.floor((1 - bill / myBill) * 100)}% less than ${me.name}. Press Enter to compare this model instead.`;
+      g.attr("data-id", d.id).on("mouseenter", (ev) => C.tip.show(d, ev, tok, S.task)).on("mousemove", (ev) => C.tip.move(ev)).on("mouseleave", () => C.tip.hide())
+        .on("click", () => { if (!isMe) { S.id = d.id; draw(); } });
+      C.focusable(g, label, function () { C.tipFocus(this, d, tok, S.task); }, null, isMe ? null : () => { S.id = d.id; draw(); });
+      g.select(".sw").attr("fill", isMe ? "var(--role-top)" : "var(--role-cheap)");
+      g.select(".nm").text(C.trunc(d.name, 36));
+      g.select(".sub").text(`score ${d[S.task]} · ${d.open ? "open weights" : "proprietary"}`);
+      g.select(".bar").attr("fill", isMe ? "var(--role-top)" : "var(--role-cheap)");
+      const w = x(bill);
+      g.select(".bar").transition().duration(D).ease(d3.easeCubicOut).attr("width", Math.max(w, 1.5));
+      g.select(".val").transition().duration(D).ease(d3.easeCubicOut).attr("x", w + 6)
+        .on("start", function () { d3.select(this).text(isMe ? `${usd(bill)} · your model` : `${usd(bill)} · ${Math.floor((1 - bill / myBill) * 100)}% less`); });
+      PREVW[d.id] = Math.max(w, 1.5);
+    });
+    all.transition().duration(D).attr("transform", (d, i) => `translate(0,${rows.indexOf(d) * rowH})`).attr("opacity", 1);
+    $("c-chart").style.display = $("c-leg").style.display = ok ? "" : "none";
+    C.describe(svg, `Monthly bill of ${me.name} next to the cheapest models that score at least ${S.pct}% of it on ${t.short}. ` + $("c-take").textContent);
+
+    const freeMatch = ok ? C.models.filter((d) => d.free && d[S.task] != null && d[S.task] >= thr).length : 0;
+    $("c-cov").textContent = `Only models with an API price above $0 are compared: ${paid.length} of ${C.N} models. ${freeMatch ? `${freeMatch} free model${freeMatch === 1 ? "" : "s"} also score this high but are left out, because a $0 price is not a $0 bill. ` : ""}A match must cost less per month than your model and score at least ${S.pct}% of its ${t.index}. ${C.defs(["score", "bill", "snap"], S.task)}`;
+  }
+  draw();
+})();
+</script>
 <script>/* Story page: hook (flagship dumbbell + linked scatter), main message cards. Uses C (common.js) and STATS. */
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -1295,14 +1467,14 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     $("h-pct-val").textContent = S.pct + "%";
     $("h-flag-title").textContent = `What each year's best model cost, and what matches it later · ${t.short}`;
     $("h-sc-title").textContent = `All models: price vs. score · ${t.short}`;
-    $("h-flag-hint").textContent = "Each column is a release year. Black dot: that year's best paid model. Open circle: the cheapest later model that matches its score. Line: the saving. Click a column to show these models on the right.";
+    $("h-flag-hint").textContent = "Black dot: a year's best paid model. Open circle: the cheapest later model that matches it. Click a column to see it on the right.";
     hookLine();
     flags.update({ task: S.task, pct: S.pct, selectedYear: S.year });
     const r = row();
     const focus = r && r.flag ? new Set([r.flag.id, ...r.later.map((m) => m.id)]) : null;
     sc.update({ pct: S.pct, tokens: 0, pass: () => true, focusIds: focus, selectedId: r && r.flag ? r.flag.id : null,
       region: r && r.flag ? { price: r.flag.price, score: (S.pct / 100) * r.flag[S.task] } : null });
-    $("h-sc-hint").textContent = r && r.flag ? `Each dot is a model: further right costs more, higher scores are better. Ringed: ${r.flag.name}, best of ${S.year} (score ${r.flag[S.task]}, ${usd(r.flag.price)}). Box: the ${r.later.length} later models that are cheaper and score at least ${S.pct}% of that score. The rest fade.` : "Each dot is a model: further right costs more, higher scores are better. Click a column on the left to focus on one year.";
+    $("h-sc-hint").textContent = r && r.flag ? `Ringed: ${r.flag.name}, best of ${S.year} (score ${r.flag[S.task]}, ${usd(r.flag.price)}). Box: the ${r.later.length} later models that are cheaper and score at least ${S.pct}% of it.` : "Each dot is a model: further right costs more, higher is better. Click a column on the left to pick a year.";
     const c = C.coverage(S.task); $("h-cov").textContent = c.text + " " + C.defs(["score", "price", "year", "snap"], S.task);
   }
   render();
@@ -1376,7 +1548,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
    Uses C (common.js). The task is shared with the hook through the "taskchange" event. */
 (function () {
   const $ = (id) => document.getElementById(id);
-  const S = { task: "general", lic: "all", band: null };
+  const S = { task: "general", lic: "all", band: null }, PREV = { dots: {}, bands: {} }, FOCUS = { band: null };
   // band edges on each task's own score scale (last band is open-ended)
   const hash = (s) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); };
   const usd = (v) => C.fmtUSD(v);
@@ -1414,7 +1586,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     const bw = x.bandwidth();
 
     $("i1-title").textContent = `What does each step up in score cost? · ${t.short}`;
-    $("i1-hint").textContent = "Each dot is one paid model, grouped by score. Black bar: the group's median price. Shaded block: the middle half of its models. Click a band to see its cheapest and most expensive model.";
+    $("i1-hint").textContent = "Dots: paid models, grouped by score. Click a band for its cheapest and priciest model.";
 
     // takeaway: only statements the numbers support
     const used = bands.filter((b) => b.ms.length);
@@ -1431,26 +1603,41 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     g.append("text").attr("class", "title-lab").attr("transform", "rotate(-90)").attr("x", -ih / 2).attr("y", -44).attr("text-anchor", "middle").text("price per 1M tokens (log scale)");
     g.append("text").attr("class", "title-lab").attr("x", iw / 2).attr("y", ih + 48).attr("text-anchor", "middle").text(`${t.index} score band (higher = better) →`);
 
+    const NEXT = {};
     bands.forEach((b) => {
       const bx = x(b.i), cx = bx + bw / 2;
-      const col = g.append("g").style("cursor", "pointer").on("click", () => { S.band = S.band === b.i ? null : b.i; draw(); });
-      col.append("rect").attr("x", bx).attr("y", 0).attr("width", bw).attr("height", ih).attr("rx", 6)
+      const toggle = () => { S.band = S.band === b.i ? null : b.i; FOCUS.band = b.i; draw(); };
+      const col = g.append("g").attr("class", "band-col").attr("data-band", b.i).style("cursor", "pointer").on("click", toggle);
+      C.focusable(col, b.ms.length ? `${t.short} ${b.label}: ${b.ms.length} models, median ${usd(b.med)}, cheapest ${b.ms[0].name} ${usd(b.ms[0].price)}, most expensive ${b.ms[b.ms.length - 1].name} ${usd(b.ms[b.ms.length - 1].price)}. Press Enter to ${S.band === b.i ? "clear" : "select"} this band.` : `${t.short} ${b.label}: no models`, () => {}, () => {}, toggle);
+      col.append("rect").attr("x", bx).attr("y", 0).attr("width", bw).attr("height", ih).attr("rx", 6).attr("class", "focus-ring")
         .attr("fill", S.band === b.i ? "var(--hl-bg)" : "transparent").attr("stroke", S.band === b.i ? "var(--accent)" : "none");
       if (b.ms.length) {
-        col.append("rect").attr("x", bx + bw * 0.08).attr("width", bw * 0.84).attr("y", y(b.q3)).attr("height", Math.max(y(b.q1) - y(b.q3), 1)).attr("fill", "var(--text-muted)").attr("opacity", 0.18);
+        const pb = PREV.bands[b.i], D = C.dur();
+        const box = col.append("rect").attr("x", bx + bw * 0.08).attr("width", bw * 0.84).attr("fill", "var(--text-muted)").attr("opacity", 0.18)
+          .attr("y", pb ? pb.q3 : y(b.med)).attr("height", pb ? pb.h : 1);
+        box.transition().duration(D).ease(d3.easeCubicOut).attr("y", y(b.q3)).attr("height", Math.max(y(b.q1) - y(b.q3), 1));
+        PREV.bands[b.i] = { q3: y(b.q3), h: Math.max(y(b.q1) - y(b.q3), 1), med: y(b.med) };
         col.selectAll("circle").data(b.ms).join("circle")
           .attr("class", (d) => "dot " + (d.open ? "open" : "prop")).attr("r", 3.6).attr("opacity", 0.8)
-          .attr("cx", (d) => cx + ((hash(d.id) % 1000) / 1000 - 0.5) * bw * 0.78).attr("cy", (d) => y(d.price))
-          .on("mouseenter", (ev, d) => C.tip.show(d, ev, 0, S.task)).on("mousemove", (ev) => C.tip.move(ev)).on("mouseleave", () => C.tip.hide());
-        col.append("line").attr("x1", bx + bw * 0.04).attr("x2", bx + bw * 0.96).attr("y1", y(b.med)).attr("y2", y(b.med)).attr("stroke", "var(--text-primary)").attr("stroke-width", 2.6).style("pointer-events", "none");
-        col.append("text").attr("class", "halo").attr("x", cx).attr("y", y(b.med) - 6).attr("text-anchor", "middle").style("fill", "var(--text-primary)").style("font-weight", 600).style("pointer-events", "none").text(usd(b.med));
+          .attr("cx", (d) => cx + ((hash(d.id) % 1000) / 1000 - 0.5) * bw * 0.78).attr("cy", (d) => (PREV.dots[d.id] != null ? PREV.dots[d.id] : ih))
+          .on("mouseenter", (ev, d) => C.tip.show(d, ev, 0, S.task)).on("mousemove", (ev) => C.tip.move(ev)).on("mouseleave", () => C.tip.hide())
+          .transition().duration(D).ease(d3.easeCubicOut).delay((d, i) => (D ? Math.min(i * 6, 300) : 0)).attr("cy", (d) => y(d.price));
+        b.ms.forEach((d) => { NEXT[d.id] = y(d.price); });
+        const ml = col.append("line").attr("x1", bx + bw * 0.04).attr("x2", bx + bw * 0.96).attr("y1", pb ? pb.med : y(b.med)).attr("y2", pb ? pb.med : y(b.med)).attr("stroke", "var(--text-primary)").attr("stroke-width", 2.6).style("pointer-events", "none");
+        ml.transition().duration(D).ease(d3.easeCubicOut).attr("y1", y(b.med)).attr("y2", y(b.med));
+        col.append("text").attr("class", "halo").attr("x", cx).attr("y", y(b.med) - 6).attr("opacity", D ? 0 : 1).transition().delay(D * 0.6).duration(D * 0.5).attr("opacity", 1).selection().attr("text-anchor", "middle").style("fill", "var(--text-primary)").style("font-weight", 600).style("pointer-events", "none").text(usd(b.med));
       } else {
+        delete PREV.bands[b.i];
         col.append("text").attr("x", cx).attr("y", ih / 2).attr("text-anchor", "middle").style("fill", "var(--text-muted)").text("no models");
       }
       const lab = g.append("text").attr("x", cx).attr("y", ih + 16).attr("text-anchor", "middle").style("pointer-events", "none");
       lab.append("tspan").style("fill", "var(--text-primary)").style("font-weight", 600).text(b.label);
       lab.append("tspan").attr("x", cx).attr("dy", "1.25em").text(`${b.ms.length} model${b.ms.length === 1 ? "" : "s"}`);
     });
+
+    PREV.dots = NEXT;
+    C.describe(svg, `${t.label}: price per 1M tokens by ${t.index} score band. ` + $("i1-take").textContent);
+    if (FOCUS.band != null) { const n = g.select(`.band-col[data-band="${FOCUS.band}"]`).node(); FOCUS.band = null; if (n) n.focus(); }
 
     // detail line for the clicked band
     const sb = S.band != null ? bands[S.band] : null;
@@ -1468,7 +1655,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
    One dollar axis shared by all three tasks. Colour = role (violet top, aqua cheapest); the bill is also written at the end of each bar. */
 (function () {
   const $ = (id) => document.getElementById(id);
-  const S = { usage: "medium", pct: 80 };
+  const S = { usage: "medium", pct: 80 }, PREVW = {};
   const usd = (v) => C.fmtUSD(v);
   const seg = $("i2-usage");
   C.USAGE.forEach((u) => { const b = document.createElement("button"); b.textContent = `${u.label} · ${C.fmtTok(u.tokens)}`; b.dataset.k = u.key; b.onclick = () => { S.usage = u.key; draw(); }; seg.appendChild(b); });
@@ -1513,11 +1700,15 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
         const y = y0 + headH + ri * rowH, w = x(bill), h = 20, y1 = (rowH - h) / 2;
         const row = root.append("g").attr("class", "bill-row").attr("transform", `translate(0,${y})`)
           .on("mouseenter", (ev) => C.tip.show(d, ev, tok, g.task)).on("mousemove", (ev) => C.tip.move(ev)).on("mouseleave", () => C.tip.hide());
+        C.focusable(row, `${t.label}, ${ri ? "cheapest good-enough model" : "top-scoring model"}: ${d.name}, score ${d[g.task]}, monthly bill ${usd(bill)}`, function () { C.tipFocus(this, d, tok, g.task); });
+        const key = g.task + ri, w0 = PREVW[key] != null ? PREVW[key] : 0, D = C.dur(); PREVW[key] = w;
         row.append("rect").attr("class", "hit").attr("x", -m.l).attr("width", W).attr("y", 0).attr("height", rowH);
         row.append("rect").attr("x", -m.l + 4).attr("y", rowH / 2 - 5).attr("width", 10).attr("height", 10).attr("rx", 2).attr("fill", col);
         row.append("text").attr("x", -m.l + 20).attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-primary)").style("font-size", "12px").text(C.trunc(d.name, 30));
-        row.append("rect").attr("x", 0).attr("y", y1).attr("height", h).attr("width", Math.max(w, 1.5)).attr("fill", col).attr("rx", 2);
-        row.append("text").attr("x", w + 6).attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-primary)").text(`${usd(bill)} · score ${d[g.task]}`);
+        row.append("rect").attr("x", 0).attr("y", y1).attr("height", h).attr("width", Math.max(w0, 1.5)).attr("fill", col).attr("rx", 2)
+          .transition().duration(D).ease(d3.easeCubicOut).attr("width", Math.max(w, 1.5));
+        const lab = row.append("text").attr("x", w0 + 6).attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-primary)").text(`${usd(bill)} · score ${d[g.task]}`);
+        lab.transition().duration(D).ease(d3.easeCubicOut).attr("x", w + 6);
       });
     });
 
@@ -1526,6 +1717,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     const gen = groups[0], byUse = C.USAGE.map((u) => `${u.label.toLowerCase()} ${usd(C.bill(gen.cheap, u.tokens).total)} against ${usd(C.bill(gen.top, u.tokens).total)}`);
     $("i2-take").innerHTML = `In every task the cheapest good-enough model costs a fraction of the top model's bill: ${shares.join(", ")}.` +
       ` The share stays the same at every usage level, but the dollar gap grows with usage. In General: ${byUse.join("; ")}.`;
+    C.describe(svg, "Monthly bill of the top-scoring paid model and the cheapest good-enough paid model, for each task. " + $("i2-take").textContent);
     const missing = C.TASKS.map((t) => `${t.short}: ${C.models.filter((d) => d[t.key] != null && d.price == null).length} scored but unpriced`).join("; ");
     $("i2-cov").textContent = `Only models with a score and an API price above $0 are compared (${missing}). Free models are left out because a $0 price is not a $0 bill. Reasoning models often use more tokens, so real bills can be higher. ${C.defs(["bill", "snap"])}`;
   }
@@ -1538,7 +1730,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
    vertical line; the dots on it are the cheapest model of each year at that score. */
 (function () {
   const $ = (id) => document.getElementById(id);
-  const S = { task: "general", pct: 80 };
+  const S = { task: "general", pct: 80 }, PREV = { x: null, dots: {}, task: null };
   const YEARS = C.COHORTS;                                  // 2024, 2025, 2026 (2023 has 1 model)
   const STYLE = { 2024: { w: 2.6, col: "var(--yr24)", dash: "6 4" }, 2025: { w: 2.8, col: "var(--yr25)", dash: null }, 2026: { w: 3.4, col: "var(--yr26)", dash: null } };
   const usd = (v) => "$" + (v >= 1 ? v.toFixed(2) : String(+v.toPrecision(3)));
@@ -1599,27 +1791,41 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     g.append("text").attr("class", "title-lab").attr("transform", "rotate(-90)").attr("x", -ih / 2).attr("y", -44).attr("text-anchor", "middle").text("cheapest price per 1M tokens (log scale)");
     g.append("text").attr("class", "title-lab").attr("x", iw / 2).attr("y", ih + 40).attr("text-anchor", "middle").text(`${t.index} score the model has to reach →`);
 
+    const D = C.dur(), newTask = PREV.task !== task;
+    const px = PREV.x != null ? PREV.x : x(thr);
     // good-enough line
-    g.append("line").attr("x1", x(thr)).attr("x2", x(thr)).attr("y1", 0).attr("y2", ih).attr("stroke", "var(--thr)").attr("stroke-dasharray", "5 4").attr("stroke-width", 1.3);
+    g.append("line").attr("x1", px).attr("x2", px).attr("y1", 0).attr("y2", ih).attr("stroke", "var(--thr)").attr("stroke-dasharray", "5 4").attr("stroke-width", 1.3)
+      .transition().duration(D).ease(d3.easeCubicOut).attr("x1", x(thr)).attr("x2", x(thr));
     g.append("text").attr("class", "halo").attr("x", x(thr) + (x(thr) > iw - 150 ? -6 : 6)).attr("y", 10).attr("text-anchor", x(thr) > iw - 150 ? "end" : "start").style("fill", "var(--text-primary)").text(`good enough ≥ ${thr.toFixed(1)}`);
 
     // one step curve per year, labelled at its end
+    g.append("clipPath").attr("id", "i3-clip").append("rect").attr("x", -2).attr("y", -10).attr("height", ih + 20).attr("width", newTask && D ? 0 : iw + 60)
+      .transition().duration(D * 1.6).ease(d3.easeCubicInOut).attr("width", iw + 60);
+    const lines = g.append("g").attr("clip-path", "url(#i3-clip)");
     per.forEach((p) => {
       if (!p.ms.length) return;
       const st = STYLE[p.yr], pts = curve(p.ms, task);
       const line = d3.line().x((q) => x(q[0])).y((q) => y(q[1]));
-      g.append("path").attr("d", line(pts)).attr("fill", "none").attr("stroke", st.col).attr("stroke-width", st.w).attr("stroke-dasharray", st.dash);
+      lines.append("path").attr("d", line(pts)).attr("fill", "none").attr("stroke", st.col).attr("stroke-width", st.w).attr("stroke-dasharray", st.dash);
       const end = pts[pts.length - 1];
-      g.append("text").attr("class", "halo").attr("x", x(end[0]) + 6).attr("y", y(end[1])).attr("dy", "0.33em").style("fill", STYLE[p.yr].col).style("font-weight", 700).text(p.yr);
+      g.append("text").attr("class", "halo").attr("x", x(end[0]) + 6).attr("y", y(end[1])).attr("dy", "0.33em").style("fill", STYLE[p.yr].col).style("font-weight", 700).attr("opacity", newTask && D ? 0 : 1).text(p.yr)
+        .transition().delay(D * 1.4).duration(D * 0.6).attr("opacity", 1);
     });
     // the cheapest model of each year at the good-enough score
+    const NEXTD = {};
     have.forEach((p) => {
-      g.append("circle").attr("cx", x(thr)).attr("cy", y(p.d.price)).attr("r", 5.5).attr("fill", STYLE[p.yr].col).attr("stroke", "var(--surface-1)").attr("stroke-width", 1.5)
+      const pd = PREV.dots[p.yr];
+      const dot = g.append("circle").attr("cx", px).attr("cy", pd != null ? pd : y(p.d.price)).attr("r", 5.5).attr("fill", STYLE[p.yr].col).attr("stroke", "var(--surface-1)").attr("stroke-width", 1.5)
         .on("mouseenter", (ev) => C.tip.show(p.d, ev, 0, task)).on("mousemove", (ev) => C.tip.move(ev)).on("mouseleave", () => C.tip.hide());
+      C.focusable(dot, `${p.yr} release, cheapest paid model scoring at least ${thr.toFixed(1)}: ${p.d.name}, ${usd(p.d.price)} per 1M tokens`, function () { C.tipFocus(this, p.d, 0, task); });
+      dot.transition().duration(D).ease(d3.easeCubicOut).attr("cx", x(thr)).attr("cy", y(p.d.price));
+      NEXTD[p.yr] = y(p.d.price);
       const flip = x(thr) > iw - 90;
       g.append("text").attr("class", "halo").attr("x", x(thr) + (flip ? -9 : 9)).attr("y", y(p.d.price) - 9).attr("text-anchor", flip ? "end" : "start").style("fill", "var(--text-primary)").style("font-weight", 600).text(usd(p.d.price));
     });
 
+    PREV.x = x(thr); PREV.dots = NEXTD; PREV.task = task;
+    C.describe(svg, `${t.label}: cheapest paid model that reaches each score, one line per release year. ` + $("i3-take").textContent);
     const noYear = priced.filter((d) => !d.year).length;
     $("i3-cov").textContent = `${pool.length} of ${priced.length} paid models with ${/^[AEIOU]/i.test(t.index) ? "an" : "a"} ${t.index} have a release year in 2024 to 2026 (${per.map((p) => `${p.yr}: ${p.total}`).join(", ")}); ${noYear} have no year and cannot be placed. 2026 has the most models, so it has more chances to contain a cheap one. Free models are left out. ${C.defs(["score", "price", "year", "snap"], task)}`;
   }
@@ -1628,9 +1834,9 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 </script>
 <script>
 (function(){
-  const show = (k) => { for (const x of ["a","b"]) { document.getElementById("design-"+x).hidden = x!==k; document.getElementById("tab-"+x).setAttribute("aria-selected", x===k); } };
-  document.getElementById("tab-a").onclick = () => show("a"); document.getElementById("tab-b").onclick = () => show("b");
-  const fromHash = () => { if (location.hash === "#a" || location.hash === "#b") { show(location.hash[1]); document.getElementById("explore").scrollIntoView(); } };
+  const show = (k) => { for (const x of ["a","b","c"]) { document.getElementById("design-"+x).hidden = x!==k; document.getElementById("tab-"+x).setAttribute("aria-selected", x===k); } };
+  document.getElementById("tab-a").onclick = () => show("a"); document.getElementById("tab-b").onclick = () => show("b"); document.getElementById("tab-c").onclick = () => show("c");
+  const fromHash = () => { if (location.hash === "#a" || location.hash === "#b" || location.hash === "#c") { show(location.hash[1]); document.getElementById("explore").scrollIntoView(); } };
   fromHash(); addEventListener("hashchange", fromHash);
 })();
 </script>

@@ -1,0 +1,21 @@
+<h2 class="dh">Find a cheaper match for a model (Design C)</h2>
+<p class="lede">Pick a model you use or are thinking of using. The chart shows which models score almost as well for less, and what each would cost you per month.</p>
+
+<div class="controls card">
+  <label style="min-width:230px"><span class="lab">Your model</span><input id="c-model" list="c-models" autocomplete="off" placeholder="type a model name"></label>
+  <datalist id="c-models"></datalist>
+  <div class="grp"><span class="lab">Task</span><div class="seg" id="c-task"></div></div>
+  <div class="grp"><span class="lab">Monthly usage</span><div class="seg" id="c-usage"></div></div>
+  <label class="grow"><span class="lab">A match scores at least <b id="c-pct-val"></b> of your model's score</span><input id="c-pct" type="range" min="70" max="100" step="1" value="90"></label>
+  <label><span class="lab">License</span><select id="c-lic"><option value="all">all</option><option value="open">open weights</option><option value="closed">proprietary</option></select></label>
+</div>
+<p class="hint" id="c-try" style="margin:0 0 8px"></p>
+
+<section class="card">
+  <p class="big" style="font-size:16px;margin:0 0 8px" id="c-take"></p>
+  <div id="c-chart"></div>
+  <div id="c-leg"><div class="legend"><span><i class="sq" style="background:var(--role-top)"></i>your model</span><span><i class="sq" style="background:var(--role-cheap)"></i>cheaper models that reach your quality bar (each beats the others in price or score)</span></div>
+  <p class="hint" style="margin:6px 0 0">Click a bar to compare that model instead.</p></div>
+  <p class="coverage" id="c-cov"></p>
+  <p class="explain link"><strong>Filter</strong> · the task, usage, quality bar and license controls recompute the list. <strong>Link</strong> · hovering a bar shows that model's scores, price and speed; clicking one makes it your model (nothing is removed).</p>
+</section>

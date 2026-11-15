@@ -109,6 +109,8 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 .points { display: grid; gap: 8px; margin: 12px 0 18px; padding: 0; list-style: none; }
 .points li { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 14.5px; }
 .points li b.tag { display: inline-block; margin: 0 0 4px; padding: 0; border: 0; }
+.linkbtn { font: inherit; background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; cursor: pointer; }
+#c-model { font: 14px var(--sans); padding: 5px 8px; background: var(--surface-1); color: var(--text-primary); border: 1px solid var(--border); border-radius: 3px; width: 100%; }
 </style></head>
 <body><main>
 <nav class="top"><b>The Evolution of LLM Value</b><a href="#hook">1 Hook</a><a href="#insights">2 Rising insights</a><a href="#message">3 Main message</a><a href="#explore">4 Explore</a><a href="#about">About the data</a><span id="progress" aria-hidden="true"></span></nav>
@@ -185,7 +187,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     </div>
     <p class="point">A · Over time</p>
     <h2>Has the cost of a given score fallen over the release years?</h2>
-    <p class="hint">One line per release year: the cheapest paid model that reaches each score. A line that stops means no model from that year scored higher. Dashed line: the good-enough score from the slider. Dots: each year's cheapest model there.</p>
+    <p class="hint">Each line: the cheapest paid model that reaches a score, by release year. A line that stops: no model from that year scored higher.</p>
     <p class="big" style="font-size:15px;margin:2px 0 8px" id="i3-take"></p>
     <div id="i3-chart"></div>
     <p class="coverage" id="i3-cov"></p>
@@ -214,7 +216,7 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
     </div>
     <p class="point">C · Monthly bill</p>
     <h2>How much does the top model cost next to the cheapest good-enough one?</h2>
-    <p class="hint">For each task: the top-scoring paid model and the cheapest paid model that is still good enough. Each bar is a monthly bill, on one dollar axis for all three tasks.</p>
+    <p class="hint">Each bar is a monthly bill, on one dollar axis for all three tasks.</p>
     <p class="big" style="font-size:15px;margin:2px 0 8px" id="i2-take"></p>
     <div id="i2-chart"></div>
     <div class="legend"><span><i class="sq" style="background:var(--role-top)"></i>top-scoring model in the task</span><span><i class="sq" style="background:var(--role-cheap)"></i>cheapest model that still reaches the good-enough score</span></div>
@@ -243,13 +245,15 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <section class="story" id="explore">
   <p class="step">4 · Solution</p>
   <h2>Test it on your own task and budget</h2>
-  <p class="big">The three views above hold for the whole market. Here you apply them to your own case: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? <b>Explore by performance</b> (Design A) starts from price-versus-score plots. <b>Explore by budget</b> (Design B) starts from your requirements. Both use the same definitions as above.</p>
+  <p class="big">The three views above hold for the whole market. Here you apply them to your own case: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? <b>Explore by performance</b> (Design A) starts from price-versus-score plots. <b>Explore by budget</b> (Design B) starts from your requirements. <b>Find a cheaper match</b> (Design C) starts from one model you already use. All three use the same definitions as above.</p>
   <div class="tabs" role="tablist">
     <button role="tab" id="tab-a" aria-selected="true"><b>Explore by performance</b> <span style="color:var(--text-muted)">(Design A · brush &amp; link)</span></button>
     <button role="tab" id="tab-b" aria-selected="false"><b>Explore by budget</b> <span style="color:var(--text-muted)">(Design B · shared filters)</span></button>
+    <button role="tab" id="tab-c" aria-selected="false"><b>Find a cheaper match</b> <span style="color:var(--text-muted)">(Design C · one model)</span></button>
   </div>
   <div class="design" id="design-a">/*A*/</div>
   <div class="design" id="design-b" hidden>/*B*/</div>
+  <div class="design" id="design-c" hidden>/*C*/</div>
 </section>
 
 <footer id="about">
@@ -263,13 +267,14 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <script>/*COMMON*/</script>
 <script>/*APAGE*/</script>
 <script>/*BPAGE*/</script>
+<script>/*CPAGE*/</script>
 <script>/*STORY*/</script>
 <script>/*INSIGHTS*/</script>
 <script>
 (function(){
-  const show = (k) => { for (const x of ["a","b"]) { document.getElementById("design-"+x).hidden = x!==k; document.getElementById("tab-"+x).setAttribute("aria-selected", x===k); } };
-  document.getElementById("tab-a").onclick = () => show("a"); document.getElementById("tab-b").onclick = () => show("b");
-  const fromHash = () => { if (location.hash === "#a" || location.hash === "#b") { show(location.hash[1]); document.getElementById("explore").scrollIntoView(); } };
+  const show = (k) => { for (const x of ["a","b","c"]) { document.getElementById("design-"+x).hidden = x!==k; document.getElementById("tab-"+x).setAttribute("aria-selected", x===k); } };
+  document.getElementById("tab-a").onclick = () => show("a"); document.getElementById("tab-b").onclick = () => show("b"); document.getElementById("tab-c").onclick = () => show("c");
+  const fromHash = () => { if (location.hash === "#a" || location.hash === "#b" || location.hash === "#c") { show(location.hash[1]); document.getElementById("explore").scrollIntoView(); } };
   fromHash(); addEventListener("hashchange", fromHash);
 })();
 </script>

@@ -2,7 +2,7 @@
    Uses C (common.js). The task is shared with the hook through the "taskchange" event. */
 (function () {
   const $ = (id) => document.getElementById(id);
-  const S = { task: "general", lic: "all", band: null };
+  const S = { task: "general", lic: "all", band: null }, PREV = { dots: {}, bands: {} }, FOCUS = { band: null };
   // band edges on each task's own score scale (last band is open-ended)
   const hash = (s) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); };
   const usd = (v) => C.fmtUSD(v);
@@ -40,7 +40,7 @@
     const bw = x.bandwidth();
 
     $("i1-title").textContent = `What does each step up in score cost? · ${t.short}`;
-    $("i1-hint").textContent = "Each dot is one paid model, grouped by score. Black bar: the group's median price. Shaded block: the middle half of its models. Click a band to see its cheapest and most expensive model.";
+    $("i1-hint").textContent = "Dots: paid models, grouped by score. Click a band for its cheapest and priciest model.";
 
     // takeaway: only statements the numbers support
     const used = bands.filter((b) => b.ms.length);
@@ -57,26 +57,41 @@
     g.append("text").attr("class", "title-lab").attr("transform", "rotate(-90)").attr("x", -ih / 2).attr("y", -44).attr("text-anchor", "middle").text("price per 1M tokens (log scale)");
     g.append("text").attr("class", "title-lab").attr("x", iw / 2).attr("y", ih + 48).attr("text-anchor", "middle").text(`${t.index} score band (higher = better) →`);
 
+    const NEXT = {};
     bands.forEach((b) => {
       const bx = x(b.i), cx = bx + bw / 2;
-      const col = g.append("g").style("cursor", "pointer").on("click", () => { S.band = S.band === b.i ? null : b.i; draw(); });
-      col.append("rect").attr("x", bx).attr("y", 0).attr("width", bw).attr("height", ih).attr("rx", 6)
+      const toggle = () => { S.band = S.band === b.i ? null : b.i; FOCUS.band = b.i; draw(); };
+      const col = g.append("g").attr("class", "band-col").attr("data-band", b.i).style("cursor", "pointer").on("click", toggle);
+      C.focusable(col, b.ms.length ? `${t.short} ${b.label}: ${b.ms.length} models, median ${usd(b.med)}, cheapest ${b.ms[0].name} ${usd(b.ms[0].price)}, most expensive ${b.ms[b.ms.length - 1].name} ${usd(b.ms[b.ms.length - 1].price)}. Press Enter to ${S.band === b.i ? "clear" : "select"} this band.` : `${t.short} ${b.label}: no models`, () => {}, () => {}, toggle);
+      col.append("rect").attr("x", bx).attr("y", 0).attr("width", bw).attr("height", ih).attr("rx", 6).attr("class", "focus-ring")
         .attr("fill", S.band === b.i ? "var(--hl-bg)" : "transparent").attr("stroke", S.band === b.i ? "var(--accent)" : "none");
       if (b.ms.length) {
-        col.append("rect").attr("x", bx + bw * 0.08).attr("width", bw * 0.84).attr("y", y(b.q3)).attr("height", Math.max(y(b.q1) - y(b.q3), 1)).attr("fill", "var(--text-muted)").attr("opacity", 0.18);
+        const pb = PREV.bands[b.i], D = C.dur();
+        const box = col.append("rect").attr("x", bx + bw * 0.08).attr("width", bw * 0.84).attr("fill", "var(--text-muted)").attr("opacity", 0.18)
+          .attr("y", pb ? pb.q3 : y(b.med)).attr("height", pb ? pb.h : 1);
+        box.transition().duration(D).ease(d3.easeCubicOut).attr("y", y(b.q3)).attr("height", Math.max(y(b.q1) - y(b.q3), 1));
+        PREV.bands[b.i] = { q3: y(b.q3), h: Math.max(y(b.q1) - y(b.q3), 1), med: y(b.med) };
         col.selectAll("circle").data(b.ms).join("circle")
           .attr("class", (d) => "dot " + (d.open ? "open" : "prop")).attr("r", 3.6).attr("opacity", 0.8)
-          .attr("cx", (d) => cx + ((hash(d.id) % 1000) / 1000 - 0.5) * bw * 0.78).attr("cy", (d) => y(d.price))
-          .on("mouseenter", (ev, d) => C.tip.show(d, ev, 0, S.task)).on("mousemove", (ev) => C.tip.move(ev)).on("mouseleave", () => C.tip.hide());
-        col.append("line").attr("x1", bx + bw * 0.04).attr("x2", bx + bw * 0.96).attr("y1", y(b.med)).attr("y2", y(b.med)).attr("stroke", "var(--text-primary)").attr("stroke-width", 2.6).style("pointer-events", "none");
-        col.append("text").attr("class", "halo").attr("x", cx).attr("y", y(b.med) - 6).attr("text-anchor", "middle").style("fill", "var(--text-primary)").style("font-weight", 600).style("pointer-events", "none").text(usd(b.med));
+          .attr("cx", (d) => cx + ((hash(d.id) % 1000) / 1000 - 0.5) * bw * 0.78).attr("cy", (d) => (PREV.dots[d.id] != null ? PREV.dots[d.id] : ih))
+          .on("mouseenter", (ev, d) => C.tip.show(d, ev, 0, S.task)).on("mousemove", (ev) => C.tip.move(ev)).on("mouseleave", () => C.tip.hide())
+          .transition().duration(D).ease(d3.easeCubicOut).delay((d, i) => (D ? Math.min(i * 6, 300) : 0)).attr("cy", (d) => y(d.price));
+        b.ms.forEach((d) => { NEXT[d.id] = y(d.price); });
+        const ml = col.append("line").attr("x1", bx + bw * 0.04).attr("x2", bx + bw * 0.96).attr("y1", pb ? pb.med : y(b.med)).attr("y2", pb ? pb.med : y(b.med)).attr("stroke", "var(--text-primary)").attr("stroke-width", 2.6).style("pointer-events", "none");
+        ml.transition().duration(D).ease(d3.easeCubicOut).attr("y1", y(b.med)).attr("y2", y(b.med));
+        col.append("text").attr("class", "halo").attr("x", cx).attr("y", y(b.med) - 6).attr("opacity", D ? 0 : 1).transition().delay(D * 0.6).duration(D * 0.5).attr("opacity", 1).selection().attr("text-anchor", "middle").style("fill", "var(--text-primary)").style("font-weight", 600).style("pointer-events", "none").text(usd(b.med));
       } else {
+        delete PREV.bands[b.i];
         col.append("text").attr("x", cx).attr("y", ih / 2).attr("text-anchor", "middle").style("fill", "var(--text-muted)").text("no models");
       }
       const lab = g.append("text").attr("x", cx).attr("y", ih + 16).attr("text-anchor", "middle").style("pointer-events", "none");
       lab.append("tspan").style("fill", "var(--text-primary)").style("font-weight", 600).text(b.label);
       lab.append("tspan").attr("x", cx).attr("dy", "1.25em").text(`${b.ms.length} model${b.ms.length === 1 ? "" : "s"}`);
     });
+
+    PREV.dots = NEXT;
+    C.describe(svg, `${t.label}: price per 1M tokens by ${t.index} score band. ` + $("i1-take").textContent);
+    if (FOCUS.band != null) { const n = g.select(`.band-col[data-band="${FOCUS.band}"]`).node(); FOCUS.band = null; if (n) n.focus(); }
 
     // detail line for the clicked band
     const sb = S.band != null ? bands[S.band] : null;
@@ -94,7 +109,7 @@
    One dollar axis shared by all three tasks. Colour = role (violet top, aqua cheapest); the bill is also written at the end of each bar. */
 (function () {
   const $ = (id) => document.getElementById(id);
-  const S = { usage: "medium", pct: 80 };
+  const S = { usage: "medium", pct: 80 }, PREVW = {};
   const usd = (v) => C.fmtUSD(v);
   const seg = $("i2-usage");
   C.USAGE.forEach((u) => { const b = document.createElement("button"); b.textContent = `${u.label} · ${C.fmtTok(u.tokens)}`; b.dataset.k = u.key; b.onclick = () => { S.usage = u.key; draw(); }; seg.appendChild(b); });
@@ -139,11 +154,15 @@
         const y = y0 + headH + ri * rowH, w = x(bill), h = 20, y1 = (rowH - h) / 2;
         const row = root.append("g").attr("class", "bill-row").attr("transform", `translate(0,${y})`)
           .on("mouseenter", (ev) => C.tip.show(d, ev, tok, g.task)).on("mousemove", (ev) => C.tip.move(ev)).on("mouseleave", () => C.tip.hide());
+        C.focusable(row, `${t.label}, ${ri ? "cheapest good-enough model" : "top-scoring model"}: ${d.name}, score ${d[g.task]}, monthly bill ${usd(bill)}`, function () { C.tipFocus(this, d, tok, g.task); });
+        const key = g.task + ri, w0 = PREVW[key] != null ? PREVW[key] : 0, D = C.dur(); PREVW[key] = w;
         row.append("rect").attr("class", "hit").attr("x", -m.l).attr("width", W).attr("y", 0).attr("height", rowH);
         row.append("rect").attr("x", -m.l + 4).attr("y", rowH / 2 - 5).attr("width", 10).attr("height", 10).attr("rx", 2).attr("fill", col);
         row.append("text").attr("x", -m.l + 20).attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-primary)").style("font-size", "12px").text(C.trunc(d.name, 30));
-        row.append("rect").attr("x", 0).attr("y", y1).attr("height", h).attr("width", Math.max(w, 1.5)).attr("fill", col).attr("rx", 2);
-        row.append("text").attr("x", w + 6).attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-primary)").text(`${usd(bill)} · score ${d[g.task]}`);
+        row.append("rect").attr("x", 0).attr("y", y1).attr("height", h).attr("width", Math.max(w0, 1.5)).attr("fill", col).attr("rx", 2)
+          .transition().duration(D).ease(d3.easeCubicOut).attr("width", Math.max(w, 1.5));
+        const lab = row.append("text").attr("x", w0 + 6).attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-primary)").text(`${usd(bill)} · score ${d[g.task]}`);
+        lab.transition().duration(D).ease(d3.easeCubicOut).attr("x", w + 6);
       });
     });
 
@@ -152,6 +171,7 @@
     const gen = groups[0], byUse = C.USAGE.map((u) => `${u.label.toLowerCase()} ${usd(C.bill(gen.cheap, u.tokens).total)} against ${usd(C.bill(gen.top, u.tokens).total)}`);
     $("i2-take").innerHTML = `In every task the cheapest good-enough model costs a fraction of the top model's bill: ${shares.join(", ")}.` +
       ` The share stays the same at every usage level, but the dollar gap grows with usage. In General: ${byUse.join("; ")}.`;
+    C.describe(svg, "Monthly bill of the top-scoring paid model and the cheapest good-enough paid model, for each task. " + $("i2-take").textContent);
     const missing = C.TASKS.map((t) => `${t.short}: ${C.models.filter((d) => d[t.key] != null && d.price == null).length} scored but unpriced`).join("; ");
     $("i2-cov").textContent = `Only models with a score and an API price above $0 are compared (${missing}). Free models are left out because a $0 price is not a $0 bill. Reasoning models often use more tokens, so real bills can be higher. ${C.defs(["bill", "snap"])}`;
   }
@@ -164,7 +184,7 @@
    vertical line; the dots on it are the cheapest model of each year at that score. */
 (function () {
   const $ = (id) => document.getElementById(id);
-  const S = { task: "general", pct: 80 };
+  const S = { task: "general", pct: 80 }, PREV = { x: null, dots: {}, task: null };
   const YEARS = C.COHORTS;                                  // 2024, 2025, 2026 (2023 has 1 model)
   const STYLE = { 2024: { w: 2.6, col: "var(--yr24)", dash: "6 4" }, 2025: { w: 2.8, col: "var(--yr25)", dash: null }, 2026: { w: 3.4, col: "var(--yr26)", dash: null } };
   const usd = (v) => "$" + (v >= 1 ? v.toFixed(2) : String(+v.toPrecision(3)));
@@ -225,27 +245,41 @@
     g.append("text").attr("class", "title-lab").attr("transform", "rotate(-90)").attr("x", -ih / 2).attr("y", -44).attr("text-anchor", "middle").text("cheapest price per 1M tokens (log scale)");
     g.append("text").attr("class", "title-lab").attr("x", iw / 2).attr("y", ih + 40).attr("text-anchor", "middle").text(`${t.index} score the model has to reach →`);
 
+    const D = C.dur(), newTask = PREV.task !== task;
+    const px = PREV.x != null ? PREV.x : x(thr);
     // good-enough line
-    g.append("line").attr("x1", x(thr)).attr("x2", x(thr)).attr("y1", 0).attr("y2", ih).attr("stroke", "var(--thr)").attr("stroke-dasharray", "5 4").attr("stroke-width", 1.3);
+    g.append("line").attr("x1", px).attr("x2", px).attr("y1", 0).attr("y2", ih).attr("stroke", "var(--thr)").attr("stroke-dasharray", "5 4").attr("stroke-width", 1.3)
+      .transition().duration(D).ease(d3.easeCubicOut).attr("x1", x(thr)).attr("x2", x(thr));
     g.append("text").attr("class", "halo").attr("x", x(thr) + (x(thr) > iw - 150 ? -6 : 6)).attr("y", 10).attr("text-anchor", x(thr) > iw - 150 ? "end" : "start").style("fill", "var(--text-primary)").text(`good enough ≥ ${thr.toFixed(1)}`);
 
     // one step curve per year, labelled at its end
+    g.append("clipPath").attr("id", "i3-clip").append("rect").attr("x", -2).attr("y", -10).attr("height", ih + 20).attr("width", newTask && D ? 0 : iw + 60)
+      .transition().duration(D * 1.6).ease(d3.easeCubicInOut).attr("width", iw + 60);
+    const lines = g.append("g").attr("clip-path", "url(#i3-clip)");
     per.forEach((p) => {
       if (!p.ms.length) return;
       const st = STYLE[p.yr], pts = curve(p.ms, task);
       const line = d3.line().x((q) => x(q[0])).y((q) => y(q[1]));
-      g.append("path").attr("d", line(pts)).attr("fill", "none").attr("stroke", st.col).attr("stroke-width", st.w).attr("stroke-dasharray", st.dash);
+      lines.append("path").attr("d", line(pts)).attr("fill", "none").attr("stroke", st.col).attr("stroke-width", st.w).attr("stroke-dasharray", st.dash);
       const end = pts[pts.length - 1];
-      g.append("text").attr("class", "halo").attr("x", x(end[0]) + 6).attr("y", y(end[1])).attr("dy", "0.33em").style("fill", STYLE[p.yr].col).style("font-weight", 700).text(p.yr);
+      g.append("text").attr("class", "halo").attr("x", x(end[0]) + 6).attr("y", y(end[1])).attr("dy", "0.33em").style("fill", STYLE[p.yr].col).style("font-weight", 700).attr("opacity", newTask && D ? 0 : 1).text(p.yr)
+        .transition().delay(D * 1.4).duration(D * 0.6).attr("opacity", 1);
     });
     // the cheapest model of each year at the good-enough score
+    const NEXTD = {};
     have.forEach((p) => {
-      g.append("circle").attr("cx", x(thr)).attr("cy", y(p.d.price)).attr("r", 5.5).attr("fill", STYLE[p.yr].col).attr("stroke", "var(--surface-1)").attr("stroke-width", 1.5)
+      const pd = PREV.dots[p.yr];
+      const dot = g.append("circle").attr("cx", px).attr("cy", pd != null ? pd : y(p.d.price)).attr("r", 5.5).attr("fill", STYLE[p.yr].col).attr("stroke", "var(--surface-1)").attr("stroke-width", 1.5)
         .on("mouseenter", (ev) => C.tip.show(p.d, ev, 0, task)).on("mousemove", (ev) => C.tip.move(ev)).on("mouseleave", () => C.tip.hide());
+      C.focusable(dot, `${p.yr} release, cheapest paid model scoring at least ${thr.toFixed(1)}: ${p.d.name}, ${usd(p.d.price)} per 1M tokens`, function () { C.tipFocus(this, p.d, 0, task); });
+      dot.transition().duration(D).ease(d3.easeCubicOut).attr("cx", x(thr)).attr("cy", y(p.d.price));
+      NEXTD[p.yr] = y(p.d.price);
       const flip = x(thr) > iw - 90;
       g.append("text").attr("class", "halo").attr("x", x(thr) + (flip ? -9 : 9)).attr("y", y(p.d.price) - 9).attr("text-anchor", flip ? "end" : "start").style("fill", "var(--text-primary)").style("font-weight", 600).text(usd(p.d.price));
     });
 
+    PREV.x = x(thr); PREV.dots = NEXTD; PREV.task = task;
+    C.describe(svg, `${t.label}: cheapest paid model that reaches each score, one line per release year. ` + $("i3-take").textContent);
     const noYear = priced.filter((d) => !d.year).length;
     $("i3-cov").textContent = `${pool.length} of ${priced.length} paid models with ${/^[AEIOU]/i.test(t.index) ? "an" : "a"} ${t.index} have a release year in 2024 to 2026 (${per.map((p) => `${p.yr}: ${p.total}`).join(", ")}); ${noYear} have no year and cannot be placed. 2026 has the most models, so it has more chances to contain a cheap one. Free models are left out. ${C.defs(["score", "price", "year", "snap"], task)}`;
   }

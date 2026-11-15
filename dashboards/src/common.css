@@ -149,3 +149,14 @@ details.defs li { margin: 3px 0; }
 .flag-row .mult { fill: var(--text-primary); font-weight: 700; font-size: 12.5px; }
 
 .halo { paint-order: stroke; stroke: var(--surface-1); stroke-width: 3px; stroke-linejoin: round; }
+
+/* folded notes: the summary line stays short, the detail opens on demand */
+details.fold { margin: 8px 0 0; font-size: 12.5px; color: var(--text-muted); }
+details.fold > summary { cursor: pointer; font-style: italic; width: fit-content; }
+details.fold > summary:hover { color: var(--text-primary); }
+details.fold[open] > summary { color: var(--text-primary); }
+details.fold .coverage, details.fold .explain { margin: 6px 0 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+svg [tabindex]:focus { outline: none; }
+svg [tabindex]:focus-visible .focus-ring, svg circle[tabindex]:focus-visible { stroke: var(--ring); stroke-width: 3px; }
+.bill-row:focus-visible .hit, .bill-row:focus .hit { stroke: var(--accent); stroke-width: 1.5; fill: var(--hl-bg); }

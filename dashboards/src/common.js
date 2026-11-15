@@ -317,3 +317,29 @@
     return { update: render };
   };
 })();
+
+/* ---------- shared UI helpers: motion, keyboard tooltip, folded notes ---------- */
+(function () {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  C.dur = (ms) => (reduce ? 0 : ms == null ? 650 : ms);
+  // show the tooltip next to a focused element (keyboard users have no mouse position)
+  C.tipFocus = (node, d, tokens, task) => {
+    const r = node.getBoundingClientRect();
+    C.tip.show(d, { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 }, tokens, task);
+  };
+  // give an svg a text description for screen readers
+  C.describe = (svgSel, label) => svgSel.attr("role", "img").attr("aria-label", label);
+  // make a mark keyboard-focusable and announce it
+  C.focusable = (sel, label, onFocus, onBlur, onKey) => sel.attr("tabindex", 0).attr("role", onKey ? "button" : "img")
+    .attr("aria-label", label).on("focus", onFocus).on("blur", onBlur || (() => C.tip.hide()))
+    .on("keydown", (ev) => { if (onKey && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); onKey(); } });
+  // fold every definitions/coverage note (and the Link/Filter line after it) into one small expandable line
+  C.fold = () => document.querySelectorAll(".coverage").forEach((el) => {
+    if (el.parentElement.classList.contains("fold")) return;
+    const d = document.createElement("details"); d.className = "fold";
+    const s = document.createElement("summary"); s.textContent = "Definitions and what is left out";
+    el.before(d); d.append(s, el);
+    const nx = d.nextElementSibling; if (nx && nx.classList.contains("explain")) d.append(nx);
+  });
+  addEventListener("load", C.fold);
+})();

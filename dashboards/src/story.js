@@ -155,14 +155,14 @@
     $("h-pct-val").textContent = S.pct + "%";
     $("h-flag-title").textContent = `What each year's best model cost, and what matches it later · ${t.short}`;
     $("h-sc-title").textContent = `All models: price vs. score · ${t.short}`;
-    $("h-flag-hint").textContent = "Each column is a release year. Black dot: that year's best paid model. Open circle: the cheapest later model that matches its score. Line: the saving. Click a column to show these models on the right.";
+    $("h-flag-hint").textContent = "Black dot: a year's best paid model. Open circle: the cheapest later model that matches it. Click a column to see it on the right.";
     hookLine();
     flags.update({ task: S.task, pct: S.pct, selectedYear: S.year });
     const r = row();
     const focus = r && r.flag ? new Set([r.flag.id, ...r.later.map((m) => m.id)]) : null;
     sc.update({ pct: S.pct, tokens: 0, pass: () => true, focusIds: focus, selectedId: r && r.flag ? r.flag.id : null,
       region: r && r.flag ? { price: r.flag.price, score: (S.pct / 100) * r.flag[S.task] } : null });
-    $("h-sc-hint").textContent = r && r.flag ? `Each dot is a model: further right costs more, higher scores are better. Ringed: ${r.flag.name}, best of ${S.year} (score ${r.flag[S.task]}, ${usd(r.flag.price)}). Box: the ${r.later.length} later models that are cheaper and score at least ${S.pct}% of that score. The rest fade.` : "Each dot is a model: further right costs more, higher scores are better. Click a column on the left to focus on one year.";
+    $("h-sc-hint").textContent = r && r.flag ? `Ringed: ${r.flag.name}, best of ${S.year} (score ${r.flag[S.task]}, ${usd(r.flag.price)}). Box: the ${r.later.length} later models that are cheaper and score at least ${S.pct}% of it.` : "Each dot is a model: further right costs more, higher is better. Click a column on the left to pick a year.";
     const c = C.coverage(S.task); $("h-cov").textContent = c.text + " " + C.defs(["score", "price", "year", "snap"], S.task);
   }
   render();
