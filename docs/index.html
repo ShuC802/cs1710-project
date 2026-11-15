@@ -407,11 +407,11 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <section class="story" id="explore">
   <p class="step">4 · Solution</p>
   <h2>Test it on your own task and budget</h2>
-  <p class="big">The three views above hold for the whole market. Here you apply them to your own case: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? <b>Explore by performance</b> (Design A) starts from price-versus-score plots. <b>Explore by budget</b> (Design B) starts from your requirements. <b>Find a cheaper match</b> (Design C) starts from one model you already use. All three use the same definitions as above.</p>
+  <p class="big">The three views above hold for the whole market. Here you apply them to your own case: for my task, how good does a model need to be, which cheaper models are good enough, and what will each cost me per month? <b>Explore by performance</b> (Design A) starts from price-versus-score plots. <b>Explore by budget</b> (Design B) starts from your requirements. <b>Explore by model</b> (Design C) starts from one model you already use. All three use the same definitions as above.</p>
   <div class="tabs" role="tablist">
     <button role="tab" id="tab-a" aria-selected="true"><b>Explore by performance</b> <span style="color:var(--text-muted)">(Design A · brush &amp; link)</span></button>
     <button role="tab" id="tab-b" aria-selected="false"><b>Explore by budget</b> <span style="color:var(--text-muted)">(Design B · shared filters)</span></button>
-    <button role="tab" id="tab-c" aria-selected="false"><b>Find a cheaper match</b> <span style="color:var(--text-muted)">(Design C · one model)</span></button>
+    <button role="tab" id="tab-c" aria-selected="false"><b>Explore by model</b> <span style="color:var(--text-muted)">(Design C · start from one model)</span></button>
   </div>
   <div class="design" id="design-a"><h2 class="dh">Explore by performance (Design A)</h2>
 <p class="lede">Start from the scatters: <b>brush a region</b> of any task to see the monthly bill of exactly those models. Hover a bill row to find the same model in all three tasks. A shaded band above the dashed line marks the good-enough scores.</p>
@@ -485,8 +485,8 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
 <li><b>Free</b> models are open-weight with a $0 price (you pay for hosting yourself). They always pass the budget control.</li>
 </ul></details>
 </div>
-  <div class="design" id="design-c" hidden><h2 class="dh">Find a cheaper match for a model (Design C)</h2>
-<p class="lede">Pick a model you use or are thinking of using. The chart shows which models score almost as well for less, and what each would cost you per month.</p>
+  <div class="design" id="design-c" hidden><h2 class="dh">Explore by model (Design C)</h2>
+<p class="lede">Start from <b>one model you already use</b>: which models score almost as well for less, and what would each cost you per month?</p>
 
 <div class="controls card">
   <label style="min-width:230px"><span class="lab">Your model</span><input id="c-model" list="c-models" autocomplete="off" placeholder="type a model name"></label>
@@ -1223,7 +1223,9 @@ footer { margin-top: 80px; font-size: 14px; font-style: italic; color: var(--tex
   const input = $("c-model");
   const byName = (txt) => { const t = txt.trim().toLowerCase(); return paid.find((m) => m.name.toLowerCase() === t); };
   input.onchange = () => { const m = byName(input.value); if (m) { S.id = m.id; draw(); } else { $("c-take").textContent = `"${input.value}" is not a priced model in this data. Pick a name from the list.`; } };
-  input.onfocus = () => input.select();
+  // clicking the box clears it so the full list drops down; leaving it empty puts the current model back
+  input.onfocus = () => { input.placeholder = C.byId.get(S.id).name; input.value = ""; };
+  input.onblur = () => { if (!byName(input.value)) input.value = C.byId.get(S.id).name; };
 
   // quick picks: the hook's example plus the top paid model of each task
   const picks = [C.byId.get("o1")].concat(C.TASKS.map((t) => paid.filter((m) => m[t.key] != null).sort((a, b) => b[t.key] - a[t.key] || a.price - b.price)[0])).filter((m, i, a) => m && a.indexOf(m) === i);

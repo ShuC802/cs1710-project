@@ -21,7 +21,9 @@
   const input = $("c-model");
   const byName = (txt) => { const t = txt.trim().toLowerCase(); return paid.find((m) => m.name.toLowerCase() === t); };
   input.onchange = () => { const m = byName(input.value); if (m) { S.id = m.id; draw(); } else { $("c-take").textContent = `"${input.value}" is not a priced model in this data. Pick a name from the list.`; } };
-  input.onfocus = () => input.select();
+  // clicking the box clears it so the full list drops down; leaving it empty puts the current model back
+  input.onfocus = () => { input.placeholder = C.byId.get(S.id).name; input.value = ""; };
+  input.onblur = () => { if (!byName(input.value)) input.value = C.byId.get(S.id).name; };
 
   // quick picks: the hook's example plus the top paid model of each task
   const picks = [C.byId.get("o1")].concat(C.TASKS.map((t) => paid.filter((m) => m[t.key] != null).sort((a, b) => b[t.key] - a[t.key] || a.price - b.price)[0])).filter((m, i, a) => m && a.indexOf(m) === i);
