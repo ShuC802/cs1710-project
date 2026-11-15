@@ -16,8 +16,19 @@
   $("c-pct").oninput = (e) => { S.pct = +e.target.value; draw(); };
   $("c-lic").onchange = (e) => { S.lic = e.target.value; draw(); };
 
+  // The dropdown lists only models that have something to compare: a score in this task and at least one cheaper
+  // paid model scoring 90% of it or more. Models with nothing cheaper (the cheap end) still show up as matches, just not as a starting point.
+  const ELIG = {};
+  C.TASKS.forEach((t) => {
+    const sc = paid.filter((d) => d[t.key] != null);
+    ELIG[t.key] = new Set(sc.filter((d) => sc.some((o) => o.price < d.price && o[t.key] >= 0.9 * d[t.key])).map((d) => d.id));
+  });
   const dl = $("c-models");
-  paid.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach((m) => { const o = document.createElement("option"); o.value = m.name; dl.appendChild(o); });
+  let listTask = null;
+  function buildList() {
+    if (listTask === S.task) return; listTask = S.task; dl.innerHTML = "";
+    paid.filter((d) => ELIG[S.task].has(d.id)).sort((a, b) => a.name.localeCompare(b.name)).forEach((d) => { const o = document.createElement("option"); o.value = d.name; dl.appendChild(o); });
+  }
   const input = $("c-model");
   const byName = (txt) => { const t = txt.trim().toLowerCase(); return paid.find((m) => m.name.toLowerCase() === t); };
   input.onchange = () => { const m = byName(input.value); if (m) { S.id = m.id; draw(); } else { $("c-take").textContent = `"${input.value}" is not a priced model in this data. Pick a name from the list.`; } };
@@ -26,7 +37,7 @@
   input.onblur = () => { if (!byName(input.value)) input.value = C.byId.get(S.id).name; };
 
   // quick picks: the hook's example plus the top paid model of each task
-  const picks = [C.byId.get("o1")].concat(C.TASKS.map((t) => paid.filter((m) => m[t.key] != null).sort((a, b) => b[t.key] - a[t.key] || a.price - b.price)[0])).filter((m, i, a) => m && a.indexOf(m) === i);
+  const picks = [C.byId.get("o1")].concat(C.TASKS.map((t) => paid.filter((m) => ELIG[t.key].has(m.id)).sort((a, b) => b[t.key] - a[t.key] || a.price - b.price)[0])).filter((m, i, a) => m && a.indexOf(m) === i);
   const tryEl = $("c-try"); tryEl.append("Try: ");
   picks.forEach((m, i) => { const b = document.createElement("button"); b.className = "linkbtn"; b.textContent = m.name; b.onclick = () => { S.id = m.id; draw(); }; tryEl.append(b); if (i < picks.length - 1) tryEl.append(" · "); });
 
@@ -36,7 +47,7 @@
 
   function draw() {
     const t = C.taskOf(S.task), me = C.byId.get(S.id), tok = C.usageOf(S.usage).tokens;
-    input.value = me.name;
+    input.value = me.name; buildList();
     $("c-task").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.k === S.task));
     $("c-usage").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.k === S.usage));
     $("c-pct-val").textContent = S.pct + "%";
@@ -84,12 +95,12 @@
     en.append("text").attr("class", "val").attr("y", rowH / 2).attr("dy", "0.33em").style("fill", "var(--text-primary)");
     const all = en.merge(row);
     all.each(function (d) {
-      const isMe = d.id === me.id, bill = C.bill(d, tok).total;
+      const isMe = d.id === me.id, bill = C.bill(d, tok).total, can = !isMe && ELIG[S.task].has(d.id);
       const g = d3.select(this);
-      const label = isMe ? `Your model: ${d.name}, ${t.short} score ${d[S.task]}, monthly bill ${usd(bill)}` : `${d.name}, ${t.short} score ${d[S.task]}, monthly bill ${usd(bill)}, ${Math.floor((1 - bill / myBill) * 100)}% less than ${me.name}. Press Enter to compare this model instead.`;
+      const label = isMe ? `Your model: ${d.name}, ${t.short} score ${d[S.task]}, monthly bill ${usd(bill)}` : `${d.name}, ${t.short} score ${d[S.task]}, monthly bill ${usd(bill)}, ${Math.floor((1 - bill / myBill) * 100)}% less than ${me.name}.${can ? " Press Enter to compare this model instead." : ""}`;
       g.attr("data-id", d.id).on("mouseenter", (ev) => C.tip.show(d, ev, tok, S.task)).on("mousemove", (ev) => C.tip.move(ev)).on("mouseleave", () => C.tip.hide())
-        .on("click", () => { if (!isMe) { S.id = d.id; draw(); } });
-      C.focusable(g, label, function () { C.tipFocus(this, d, tok, S.task); }, null, isMe ? null : () => { S.id = d.id; draw(); });
+        .on("click", () => { if (can) { S.id = d.id; draw(); } }).style("cursor", can ? "pointer" : "default");
+      C.focusable(g, label, function () { C.tipFocus(this, d, tok, S.task); }, null, can ? () => { S.id = d.id; draw(); } : null);
       g.select(".sw").attr("fill", isMe ? "var(--role-top)" : "var(--role-cheap)");
       g.select(".nm").text(C.trunc(d.name, 36));
       g.select(".sub").text(`score ${d[S.task]} · ${d.open ? "open weights" : "proprietary"}`);
